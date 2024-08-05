@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -8,6 +9,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 class RegistroSitioSeguroForm extends HookWidget {
   @override
   Widget build(BuildContext context) {
+    final String? baseURL = dotenv.env['BaseURL'];
     final nombreController = useTextEditingController();
     final cordenadasXController = useTextEditingController();
     final cordenadasYController = useTextEditingController();
@@ -19,8 +21,7 @@ class RegistroSitioSeguroForm extends HookWidget {
       String? token = prefs.getString('token');
 
       final response = await http.post(
-        Uri.parse(
-            'http://10.0.2.2:5000/api/sitioSeguro/register'),
+        Uri.parse(baseURL! +  'sitioSeguro/register'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

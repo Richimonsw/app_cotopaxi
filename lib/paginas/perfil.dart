@@ -303,27 +303,56 @@ class _ProfilePageState extends State<ProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Card(
-                color: const Color.fromRGBO(14, 54, 115, 1),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                ),
-                elevation: 0,
-                child: Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: Column(
-                    children: [
-                      Stack(
+                  color: const Color.fromRGBO(10, 57, 130, 1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  elevation: 0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15.0),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color.fromRGBO(14, 54, 115, 1),
+                          Color.fromRGBO(54, 94, 155, 1),
+                        ],
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(30.0),
+                      child: Column(
                         children: [
                           Stack(
                             children: [
-                              CircleAvatar(
-                                radius:
-                                    55, // Ajusta este valor según tus necesidades
-                                backgroundImage: NetworkImage(
-                                  _imagenPath.isNotEmpty
-                                      ? _imagenPath
-                                      : _defaultProfileImageUrl,
-                                ),
+                              Stack(
+                                children: [
+                                  CircleAvatar(
+                                    radius:
+                                        55, // Ajusta este valor según tus necesidades
+                                    backgroundImage: NetworkImage(
+                                      _imagenPath.isNotEmpty
+                                          ? _imagenPath
+                                          : _defaultProfileImageUrl,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.white,
+                                      child: IconButton(
+                                        icon: Icon(Icons.camera_alt,
+                                            color: Colors.black),
+                                        onPressed: () {
+                                          // Acción para editar la foto de perfil
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                               Positioned(
                                 bottom: 0,
@@ -342,112 +371,96 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ],
                           ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: CircleAvatar(
-                              radius: 20,
-                              backgroundColor: Colors.white,
-                              child: IconButton(
-                                icon:
-                                    Icon(Icons.camera_alt, color: Colors.black),
-                                onPressed: () {
-                                  // Acción para editar la foto de perfil
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 25),
-                      IntrinsicHeight(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '$_nombre $_apellido',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    _cedula,
-                                    style: TextStyle(
-                                        fontSize: 14, color: Colors.white),
-                                  ),
-                                  if (_userRole == "admin_zonal" ||
-                                      _userRole == "admin_farmaceutico" ||
-                                      _userRole == "admin_general")
-                                    Text(
-                                      _userRole,
-                                      style: TextStyle(
-                                        color: const Color.fromARGB(
-                                            255, 250, 239, 239),
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  if (_userRole != "admin_zonal" &&
-                                      _userRole != "admin_farmaceutico" &&
-                                      _userRole != "admin_general")
-                                    Text(
-                                      'Ciudadano',
-                                      style: TextStyle(
-                                        color: const Color.fromARGB(
-                                            255, 250, 239, 239),
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                ]),
-                            VerticalDivider(
-                              color: Colors.white,
-                              thickness: 1,
-                              width: 20,
-                            ),
-                            Column(
+                          SizedBox(height: 25),
+                          IntrinsicHeight(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (_userRole != "admin_general")
-                                  Column(
+                                Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'ALBERGUE',
+                                        '$_nombre $_apellido',
                                         style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 15,
                                             fontWeight: FontWeight.bold),
                                       ),
                                       Text(
-                                        _albergue,
+                                        _cedula,
                                         style: TextStyle(
-                                          color: const Color.fromARGB(
-                                              255, 250, 239, 239),
-                                          fontSize: 14,
-                                        ),
+                                            fontSize: 14, color: Colors.white),
                                       ),
-                                    ],
-                                  ),
-                                if (_userRole == "admin_general")
-                                  Image.asset(
-                                    'assets/icon/setting.png', // Asegúrate de que la extensión sea correcta
-                                    width:
-                                        50, // Ajusta el tamaño según sea necesario
-                                    height:
-                                        50, // Ajusta el tamaño según sea necesario
-                                  ),
+                                      if (_userRole == "admin_zonal" ||
+                                          _userRole == "admin_farmaceutico" ||
+                                          _userRole == "admin_general")
+                                        Text(
+                                          _userRole,
+                                          style: TextStyle(
+                                            color: const Color.fromARGB(
+                                                255, 250, 239, 239),
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      if (_userRole != "admin_zonal" &&
+                                          _userRole != "admin_farmaceutico" &&
+                                          _userRole != "admin_general")
+                                        Text(
+                                          'Ciudadano',
+                                          style: TextStyle(
+                                            color: const Color.fromARGB(
+                                                255, 250, 239, 239),
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                    ]),
+                                VerticalDivider(
+                                  color: Colors.white,
+                                  thickness: 1,
+                                  width: 20,
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (_userRole != "admin_general")
+                                      Column(
+                                        children: [
+                                          Text(
+                                            'ALBERGUE',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Text(
+                                            _albergue,
+                                            style: TextStyle(
+                                              color: const Color.fromARGB(
+                                                  255, 250, 239, 239),
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    if (_userRole == "admin_general")
+                                      Image.asset(
+                                        'assets/icon/admin.png', // Asegúrate de que la extensión sea correcta
+                                        width:
+                                            50, // Ajusta el tamaño según sea necesario
+                                        height:
+                                            50, // Ajusta el tamaño según sea necesario
+                                      ),
+                                  ],
+                                )
                               ],
-                            )
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  )),
               SizedBox(height: 7),
               if (_userRole != "admin_zonal" &&
                   _userRole != "admin_farmaceutico" &&
@@ -498,18 +511,20 @@ class _ProfilePageState extends State<ProfilePage> {
                           _userRole == "admin_farmaceutico") ...[
                         SizedBox(height: 4),
                         Accesibilidad(),
-                      ] else if (_userRole == "admin_general") ...[
                         SizedBox(height: 4),
-                        ListadoCiudadanos(),
-                        SizedBox(height: 4),
-                        RegistroRapido(),
-                        SizedBox(height: 10),
-                        Usuarios(),
-                        SizedBox(height: 10),
                         Albergues(),
-                        SizedBox(height: 20),
+                      ] else if (_userRole == "admin_general") ...[
+                        SizedBox(height: 3),
+                        ListadoCiudadanos(),
+                        SizedBox(height: 3),
+                        RegistroRapido(),
+                        SizedBox(height: 3),
+                        Usuarios(),
+                        SizedBox(height: 3),
+                        Albergues(),
+                        SizedBox(height: 3),
                         SitiosSeguros(),
-                        SizedBox(height: 20),
+                        SizedBox(height: 4),
                         ZonasRiesgo(),
                       ],
                       SizedBox(height: 20),

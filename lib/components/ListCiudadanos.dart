@@ -20,7 +20,7 @@ class _CiudadanosScreenState extends State<ListadoCiudadanos> {
               Row(
                 children: [
                   Icon(
-                    Icons.home_repair_service,
+                    Icons.group,
                     color: Color.fromRGBO(14, 54, 115, 1),
                     size: 24,
                   ),

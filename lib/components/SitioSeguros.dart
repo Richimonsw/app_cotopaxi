@@ -1,6 +1,7 @@
 import 'package:app_cotopaxi/components/SitioSeguros/sitioSeguro_edit_screen.dart';
 import 'package:app_cotopaxi/components/SitioSeguros/sitioSeguro_info_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +12,7 @@ class SitiosSeguros extends StatefulWidget {
 }
 
 class _SitiosSegurosState extends State<SitiosSeguros> {
+  final String? baseURL = dotenv.env['BaseURL'];
   List<dynamic> SitiosSeguros = [];
   List<dynamic> filteredSitiosSeguros = [];
   bool isLoading = true;
@@ -76,15 +78,15 @@ class _SitiosSegurosState extends State<SitiosSeguros> {
                 ),
               ),
               SizedBox(height: 20),
-              ListTile(
-                leading: Icon(Icons.visibility,
-                    color: Color.fromRGBO(14, 54, 115, 1)),
-                title: Text('Ver información'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _viewSitioSeguroInfo(context, sitioSeguro);
-                },
-              ),
+              // ListTile(
+              //   leading: Icon(Icons.visibility,
+              //       color: Color.fromRGBO(14, 54, 115, 1)),
+              //   title: Text('Ver información'),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     _viewSitioSeguroInfo(context, sitioSeguro);
+              //   },
+              // ),
               ListTile(
                 leading:
                     Icon(Icons.edit, color: Color.fromRGBO(14, 54, 115, 1)),
@@ -147,8 +149,7 @@ class _SitiosSegurosState extends State<SitiosSeguros> {
         }
 
         final response = await http.delete(
-          Uri.parse(
-              'http://10.0.2.2:5000/api/sitioSeguro/${sitioSeguro['_id']}'),
+          Uri.parse(baseURL! + 'sitioSeguro/${sitioSeguro['_id']}'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
@@ -187,8 +188,7 @@ class _SitiosSegurosState extends State<SitiosSeguros> {
       }
 
       final response = await http.get(
-        Uri.parse(
-            'http://10.0.2.2:5000/api/sitioSeguro'),
+        Uri.parse(baseURL! + 'sitioSeguro'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -298,7 +298,7 @@ class _SitiosSegurosState extends State<SitiosSeguros> {
             : filteredSitiosSeguros.isEmpty
                 ? Center(child: Text('No se encontraron Sitios Seguros'))
                 : SizedBox(
-                    height: 200,
+                    height: 220,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: filteredSitiosSeguros.length,
@@ -308,87 +308,142 @@ class _SitiosSegurosState extends State<SitiosSeguros> {
                           onTap: () =>
                               _showSitioSeguroOptions(context, sitioSeguro),
                           child: Container(
-                            width: 250,
-                            margin: EdgeInsets.all(8),
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      sitioSeguro['nombre'] ?? 'Sin nombre',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: Color.fromRGBO(14, 54, 115, 1),
-                                      ),
+                            width: 260,
+                            margin: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            child: Stack(
+                              children: [
+                                // Fondo con gradiente
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Color(0xFF4682B4), // Azul acero
+                                        Color(0xFF6495ED), // Azul cadete
+                                      ],
                                     ),
-                                    SizedBox(height: 16),
-                                    InfoRow(
-                                      icon: Icons.location_on,
-                                      label: 'Cordenadas X',
-                                      value:
-                                          sitioSeguro['cordenadas_x'] ?? 'N/A',
-                                    ),
-                                    SizedBox(height: 8),
-                                    InfoRow(
-                                      icon: Icons.location_on,
-                                      label: 'Cordenadas Y',
-                                      value:
-                                          sitioSeguro['cordenadas_y'] ?? 'N/A',
-                                    ),
-                                  ],
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
                                 ),
-                              ),
+                                // Contenido
+                                Padding(
+                                  padding: EdgeInsets.all(20),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.security,
+                                              color: Colors.white, size: 32),
+                                          SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              sitioSeguro['nombre'] ??
+                                                  'Sin nombre',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 24),
+                                      Text(
+                                        'Coordenadas',
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: CoordCard(
+                                              label: 'X',
+                                              value:
+                                                  sitioSeguro['cordenadas_x']?.toString() ??
+                                                      'N/A',
+                                            ),
+                                          ),
+                                          SizedBox(width: 12),
+                                          Expanded(
+                                            child: CoordCard(
+                                              label: 'Y',
+                                              value:
+                                                  sitioSeguro['cordenadas_y']?.toString() ??
+                                                      'N/A',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Elemento decorativo
+                                Positioned(
+                                  right: -20,
+                                  bottom: -20,
+                                  child: Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white10,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
                       },
                     ),
-                  ),
+                  )
       ],
     );
   }
 }
 
-class InfoRow extends StatelessWidget {
-  final IconData icon;
+class CoordCard extends StatelessWidget {
   final String label;
-  final int value;
+  final String value;
 
-  const InfoRow({
-    Key? key,
-    required this.icon,
-    required this.label,
-    required this.value,
-  }) : super(key: key);
+  const CoordCard({Key? key, required this.label, required this.value}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: Color.fromRGBO(14, 54, 115, 0.8)),
-        SizedBox(width: 8),
-        Text(
-          '$label: ',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.black87,
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(color: Colors.white70, fontSize: 14),
           ),
-        ),
-        Text(
-          '$value',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: Color.fromRGBO(14, 54, 115, 1),
+          SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

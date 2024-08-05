@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +15,7 @@ class UserEditScreen extends StatefulWidget {
 }
 
 class _UserEditScreenState extends State<UserEditScreen> {
+  final String? baseURL = dotenv.env['BaseURL'];
   late TextEditingController _nombreController;
   late TextEditingController _apellidoController;
   late TextEditingController _emailController;
@@ -57,7 +59,7 @@ class _UserEditScreenState extends State<UserEditScreen> {
     String? token = prefs.getString('token');
 
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:5000/api/albergue'),
+      Uri.parse(baseURL! +  'albergue'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -93,7 +95,7 @@ class _UserEditScreenState extends State<UserEditScreen> {
       String? token = prefs.getString('token');
 
       final response = await http.put(
-        Uri.parse('http://10.0.2.2:5000/api/usuario/${widget.usuario['_id']}'),
+        Uri.parse(baseURL! + 'usuario/${widget.usuario['_id']}'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

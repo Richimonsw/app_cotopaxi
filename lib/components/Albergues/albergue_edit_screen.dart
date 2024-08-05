@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +14,7 @@ class AlbergueEditScreen extends StatefulWidget {
 }
 
 class _UserEditScreenState extends State<AlbergueEditScreen> {
+  final String? baseURL = dotenv.env['BaseURL'];
   late TextEditingController _nombreController;
   late TextEditingController _cordenadasXController;
   late TextEditingController _cordenadasYController;
@@ -80,8 +82,7 @@ class _UserEditScreenState extends State<AlbergueEditScreen> {
       String? token = prefs.getString('token');
 
       final response = await http.put(
-        Uri.parse(
-            'http://10.0.2.2:5000/api/albergue/${widget.albergue['_id']}'),
+        Uri.parse(baseURL! + 'albergue/${widget.albergue['_id']}'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

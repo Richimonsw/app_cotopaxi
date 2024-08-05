@@ -85,7 +85,7 @@ class RegistroRapido extends StatelessWidget {
                                           child: Padding(
                                             padding: const EdgeInsets.all(10),
                                             child: Image.asset(
-                                              'assets/icon/setting.png', // Asegúrate de que la extensión sea correcta
+                                              'assets/icon/personasAdmin.png', // Asegúrate de que la extensión sea correcta
                                               width:
                                                   50, // Ajusta el tamaño según sea necesario
                                               height:
@@ -148,7 +148,7 @@ class RegistroRapido extends StatelessWidget {
                                           child: Padding(
                                             padding: const EdgeInsets.all(10),
                                             child: Image.asset(
-                                              'assets/icon/setting.png', // Asegúrate de que la extensión sea correcta
+                                              'assets/icon/albergue.png', // Asegúrate de que la extensión sea correcta
                                               width:
                                                   50, // Ajusta el tamaño según sea necesario
                                               height:
@@ -211,7 +211,7 @@ class RegistroRapido extends StatelessWidget {
                                         child: Padding(
                                           padding: const EdgeInsets.all(10),
                                           child: Image.asset(
-                                            'assets/icon/setting.png', // Asegúrate de que la extensión sea correcta
+                                            'assets/icon/sitioSeguros.png', // Asegúrate de que la extensión sea correcta
                                             width:
                                                 50, // Ajusta el tamaño según sea necesario
                                             height: 50,
@@ -279,7 +279,7 @@ class RegistroRapido extends StatelessWidget {
                                           child: Padding(
                                             padding: const EdgeInsets.all(10),
                                             child: Image.asset(
-                                              'assets/icon/setting.png', // Asegúrate de que la extensión sea correcta
+                                              'assets/icon/zonaRiesgo.png', // Asegúrate de que la extensión sea correcta
                                               width:
                                                   50, // Ajusta el tamaño según sea necesario
                                               height: 50,

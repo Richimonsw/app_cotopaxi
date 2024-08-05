@@ -2,6 +2,7 @@ import 'package:app_cotopaxi/components/Bodegas/bodega_edit_screen.dart';
 import 'package:app_cotopaxi/components/Bodegas/bodega_info_screen.dart';
 import 'package:app_cotopaxi/components/Bodegas/contenidoBodega_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -17,6 +18,7 @@ class Bodegas extends StatefulWidget {
 }
 
 class _BodegasState extends State<Bodegas> {
+  final String? baseURL = dotenv.env['BaseURL'];
   List<dynamic> bodegas = [];
   bool isLoading = true;
   String? error;
@@ -41,8 +43,7 @@ class _BodegasState extends State<Bodegas> {
       }
 
       final response = await http.get(
-        Uri.parse(
-            'http://10.0.2.2:5000/api/bodega/${widget.albergueId}/bodegas'),
+        Uri.parse(baseURL! + 'bodega/${widget.albergueId}/bodegas'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -193,7 +194,7 @@ class _BodegasState extends State<Bodegas> {
         }
 
         final response = await http.delete(
-          Uri.parse('http://10.0.2.2:5000/api/bodega/${bodega['_id']}'),
+          Uri.parse(baseURL! + 'bodega/${bodega['_id']}'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',

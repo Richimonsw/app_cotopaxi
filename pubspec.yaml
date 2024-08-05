@@ -16,7 +16,7 @@ dependencies:
   #permission_handler: ^8.1.1
   connectivity_plus: ^5.0.2
   path_provider: ^2.1.2
-  url_launcher: ^6.2.5
+  url_launcher: ^6.3.0
   permission_handler: ^11.3.0
   syncfusion_flutter_pdf: ^26.2.4
   shared_preferences: ^2.2.3
@@ -27,6 +27,9 @@ dependencies:
   font_awesome_flutter: ^10.7.0
   qr_code_scanner: ^1.0.1
   audioplayers: ^6.0.0
+  flutter_dotenv: ^5.1.0
+  qr_flutter: ^4.1.0
+  google_fonts: ^6.2.1
   
 dev_dependencies:
   flutter_test:
@@ -43,3 +46,9 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/setting.png
+    - assets/icon/admin.png
+    - assets/icon/personasAdmin.png
+    - assets/icon/albergue.png
+    - assets/icon/sitioSeguros.png
+    - assets/icon/zonaRiesgo.png
+    - assets/.env

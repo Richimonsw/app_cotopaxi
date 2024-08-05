@@ -1,6 +1,7 @@
 import 'package:app_cotopaxi/components/ZonaRiesgo/zonaRiesgo_edit_screen.dart';
 import 'package:app_cotopaxi/components/ZonaRiesgo/zonaRiesgo_info_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +12,7 @@ class ZonasRiesgo extends StatefulWidget {
 }
 
 class _ZonasRiesgoState extends State<ZonasRiesgo> {
+  final String? baseURL = dotenv.env['BaseURL'];
   List<dynamic> ZonasRiesgo = [];
   List<dynamic> filteredZonasRiesgo = [];
   bool isLoading = true;
@@ -76,15 +78,15 @@ class _ZonasRiesgoState extends State<ZonasRiesgo> {
                 ),
               ),
               SizedBox(height: 20),
-              ListTile(
-                leading: Icon(Icons.visibility,
-                    color: Color.fromRGBO(14, 54, 115, 1)),
-                title: Text('Ver información'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _viewZonaRiesgoInfo(context, zonaRiesgo);
-                },
-              ),
+              // ListTile(
+              //   leading: Icon(Icons.visibility,
+              //       color: Color.fromRGBO(14, 54, 115, 1)),
+              //   title: Text('Ver información'),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     _viewZonaRiesgoInfo(context, zonaRiesgo);
+              //   },
+              // ),
               ListTile(
                 leading:
                     Icon(Icons.edit, color: Color.fromRGBO(14, 54, 115, 1)),
@@ -147,8 +149,7 @@ class _ZonasRiesgoState extends State<ZonasRiesgo> {
         }
 
         final response = await http.delete(
-          Uri.parse(
-              'http://10.0.2.2:5000/api/domicilios/${zonaRiesgo['_id']}'),
+          Uri.parse(baseURL! + 'domicilios/${zonaRiesgo['_id']}'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
@@ -187,7 +188,7 @@ class _ZonasRiesgoState extends State<ZonasRiesgo> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:5000/api/domicilios'),
+        Uri.parse(baseURL! + 'domicilios'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -225,7 +226,7 @@ class _ZonasRiesgoState extends State<ZonasRiesgo> {
       MaterialPageRoute(
         builder: (context) => ZonaRiesgoEditScreen(zonaRiesgo: zonaRiesgo),
       ),
-    ).then((value) {  
+    ).then((value) {
       if (value == true) {
         fetchZonasRiesgo();
       }
@@ -245,7 +246,7 @@ class _ZonasRiesgoState extends State<ZonasRiesgo> {
               Row(
                 children: [
                   Icon(
-                    Icons.home_repair_service,
+                    Icons.warning_amber_rounded,
                     color: Color.fromRGBO(14, 54, 115, 1),
                     size: 24,
                   ),
@@ -296,7 +297,7 @@ class _ZonasRiesgoState extends State<ZonasRiesgo> {
             : filteredZonasRiesgo.isEmpty
                 ? Center(child: Text('No se encontraron Sitios Seguros'))
                 : SizedBox(
-                    height: 200,
+                    height: 220,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: filteredZonasRiesgo.length,
@@ -306,80 +307,151 @@ class _ZonasRiesgoState extends State<ZonasRiesgo> {
                           onTap: () =>
                               _showZonaRiesgoOptions(context, zonaRiesgo),
                           child: Container(
-                            width: 250,
-                            margin: EdgeInsets.all(8),
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      zonaRiesgo['nombre'] ?? 'Sin nombre',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: Color.fromRGBO(14, 54, 115, 1),
+                            width: 260,
+                            margin: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            child: Stack(
+                              children: [
+                                // Fondo con gradiente
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Color(0xFFFF4500), // Rojo-naranja
+                                        Color(0xFFFF8C00), // Naranja oscuro
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                ),
+                                // Contenido
+                                Padding(
+                                  padding: EdgeInsets.all(20),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.warning_amber_rounded,
+                                              color: Colors.white, size: 32),
+                                          SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              zonaRiesgo['nombre'] ??
+                                                  'Sin nombre',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 24),
+                                      Text(
+                                        'Nivel de Riesgo',
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      SizedBox(height: 8),
+                                      RiskLevelIndicator(
+                                        riskLevel: zonaRiesgo['zonaDeRiesgo'] ??
+                                            'N/A',
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Elemento decorativo
+                                Positioned(
+                                  right: -30,
+                                  top: -30,
+                                  child: Transform.rotate(
+                                    angle: 0.3,
+                                    child: Container(
+                                      width: 100,
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white10,
+                                        borderRadius: BorderRadius.circular(20),
                                       ),
                                     ),
-                                    SizedBox(height: 16),
-                                    InfoRow(
-                                      icon: Icons.warning_amber_rounded,
-                                      label: 'En Riesgo',
-                                      value:
-                                          zonaRiesgo['zonaDeRiesgo'] ?? 'N/A',
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
                         );
                       },
                     ),
-                  ),
+                  )
       ],
     );
   }
 }
 
-class InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final dynamic value;
 
-  const InfoRow({
-    Key? key,
-    required this.icon,
-    required this.label,
-    required this.value,
-  }) : super(key: key);
+
+class RiskLevelIndicator extends StatelessWidget {
+  final bool riskLevel;
+
+  const RiskLevelIndicator({Key? key, required this.riskLevel}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: Color.fromRGBO(14, 54, 115, 0.8)),
-        SizedBox(width: 8),
-        Text(
-          '$label: ',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.black87,
+    Color indicatorColor;
+    String displayText;
+
+    switch (riskLevel.toString().toLowerCase()) {
+      case 'true':
+        indicatorColor = Colors.red;
+        displayText = 'Si';
+        break;
+      case 'false':
+        indicatorColor = Colors.grey;
+        displayText = 'No';
+        break;
+      default:
+        indicatorColor = Colors.grey;
+        displayText = 'No';
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      decoration: BoxDecoration(
+        color: indicatorColor.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: indicatorColor, width: 2),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: indicatorColor,
+              shape: BoxShape.circle,
+            ),
           ),
-        ),
-        Text(
-          value is bool ? (value ? 'Sí' : 'No') : value.toString(),
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: Color.fromRGBO(14, 54, 115, 1),
+          SizedBox(width: 8),
+          Text(
+            displayText,
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

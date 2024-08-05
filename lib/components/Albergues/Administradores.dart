@@ -1,5 +1,6 @@
 import 'package:app_cotopaxi/components/Usuarios/user_info_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +15,7 @@ class Administradores extends StatefulWidget {
 }
 
 class _AdministradoresState extends State<Administradores> {
+  final String? baseURL = dotenv.env['BaseURL'];
   List<dynamic> administradores = [];
   bool isLoading = true;
   String? error;
@@ -37,8 +39,7 @@ class _AdministradoresState extends State<Administradores> {
         throw Exception('No se encontró el token de autenticación');
       }
       final response = await http.get(
-        Uri.parse(
-            'http://10.0.2.2:5000/api/usuario/${widget.albergueId}/albergue'),
+        Uri.parse(baseURL! + 'usuario/${widget.albergueId}/albergue'),
         headers: {'Authorization': 'Bearer $token'},
       );
 

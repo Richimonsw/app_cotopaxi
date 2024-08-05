@@ -2,6 +2,7 @@ import 'package:app_cotopaxi/components/Bodegas/product_create_screen.dart';
 import 'package:app_cotopaxi/components/Bodegas/product_transfer_screen.dart';
 import 'package:app_cotopaxi/components/Bodegas/qr_scanner_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +17,7 @@ class ContenidoBodegaScreen extends StatefulWidget {
 }
 
 class _ContenidoScreenState extends State<ContenidoBodegaScreen> {
+  final String? baseURL = dotenv.env['BaseURL'];
   List<dynamic> productos = [];
   bool isLoading = false;
   String searchText = '';
@@ -86,7 +88,7 @@ class _ContenidoScreenState extends State<ContenidoBodegaScreen> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:5000/api/productos/'),
+        Uri.parse(baseURL! + 'productos/'),
         headers: {
           'Authorization': 'Bearer $token',
         },

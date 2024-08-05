@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +10,7 @@ class ShowCiudadanos extends StatefulWidget {
 }
 
 class _ShowCiudadanoScreenState extends State<ShowCiudadanos> {
+  final String? baseURL = dotenv.env['BaseURL'];
   List<dynamic> ciudadanos = [];
   bool isLoading = false;
   String searchText = '';
@@ -33,7 +35,7 @@ class _ShowCiudadanoScreenState extends State<ShowCiudadanos> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:5000/api/ciudadano/ciudadanosDeTodosLosAlbergues/'),
+        Uri.parse(baseURL! +  'ciudadano/ciudadanosDeTodosLosAlbergues/'),
         headers: {
           'Authorization': 'Bearer $token',
         },

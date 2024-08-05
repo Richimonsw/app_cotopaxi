@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +15,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final String? baseURL = dotenv.env['BaseURL'];
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscureText =
@@ -154,8 +156,7 @@ class _LoginPageState extends State<LoginPage> {
   void _login(BuildContext context) async {
     final String name = _nameController.text.trim();
     final String password = _passwordController.text.trim();
-    final String apiUrl =
-        'http://10.0.2.2:5000/api/ciudadano/login';
+    final String apiUrl = baseURL! + 'ciudadano/login';
     var body = {
       'nombre': name,
       'cedula': password,
@@ -164,8 +165,7 @@ class _LoginPageState extends State<LoginPage> {
     final Map<String, String> _headers = {"content-type": "application/json"};
     var body2 = jsonEncode(body);
 
-    final String apiUrlAdmin =
-        'http://10.0.2.2:5000/api/usuario/login';
+    final String apiUrlAdmin = baseURL! + 'usuario/login';
     var bodyAdmin = {
       'nombre': name,
       'password': password,
@@ -221,6 +221,10 @@ class _LoginPageState extends State<LoginPage> {
           setState(() {
             prefs.setString("nombres", contentAdmin["usuario"]["nombre"]);
             prefs.setString("apellidos", contentAdmin["usuario"]["apellido"]);
+            prefs.setString(
+                "albergue",
+                contentAdmin["usuario"]["albergue"]?["nombre"] ??
+                    "Sin asignar");
             prefs.setString("cedula", contentAdmin["usuario"]["cedula"]);
             prefs.setString("rol", contentAdmin["usuario"]["rol"]);
             prefs.setString("token", contentAdmin["token"]);

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +14,7 @@ class BodegaEditScreen extends StatefulWidget {
 }
 
 class _UserEditScreenState extends State<BodegaEditScreen> {
+  final String? baseURL = dotenv.env['BaseURL'];
   late TextEditingController _nombreController;
   late TextEditingController _categoriaController;
   late TextEditingController _capacidadController;
@@ -63,8 +65,7 @@ class _UserEditScreenState extends State<BodegaEditScreen> {
       String? token = prefs.getString('token');
 
       final response = await http.put(
-        Uri.parse(
-            'http://10.0.2.2:5000/api/bodega/${widget.bodega['_id']}'),
+        Uri.parse(baseURL! +  'bodega/${widget.bodega['_id']}'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

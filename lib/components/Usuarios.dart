@@ -1,6 +1,7 @@
 import 'package:app_cotopaxi/components/Usuarios/user_edit_screen.dart';
 import 'package:app_cotopaxi/components/Usuarios/user_info_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,6 +13,7 @@ class Usuarios extends StatefulWidget {
 }
 
 class _UsuariosState extends State<Usuarios> {
+  final String? baseURL = dotenv.env['BaseURL'];
   List<dynamic> usuarios = [];
   List<dynamic> filteredUsuarios = [];
   bool isLoading = true;
@@ -76,10 +78,16 @@ class _UsuariosState extends State<Usuarios> {
                   color: Color.fromRGBO(14, 54, 115, 1),
                 ),
               ),
-              SizedBox(height: 20),
+              Divider(
+                color: const Color.fromARGB(255, 0, 0, 0),
+                thickness: 1,
+              ),
+              SizedBox(height: 10),
               ListTile(
-                leading: Icon(Icons.visibility,
-                    color: Color.fromRGBO(14, 54, 115, 1)),
+                leading: Icon(
+                  Icons.visibility,
+                  color: Color.fromRGBO(14, 54, 115, 1),
+                ),
                 title: Text('Ver información'),
                 onTap: () {
                   Navigator.pop(context);
@@ -169,8 +177,7 @@ class _UsuariosState extends State<Usuarios> {
         }
 
         final response = await http.delete(
-          Uri.parse(
-              'http://10.0.2.2:5000/api/usuario/${usuario['_id']}'),
+          Uri.parse(baseURL! + 'usuario/${usuario['_id']}'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
@@ -209,7 +216,7 @@ class _UsuariosState extends State<Usuarios> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:5000/api/usuario'),
+        Uri.parse(baseURL! + 'usuario'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -245,7 +252,7 @@ class _UsuariosState extends State<Usuarios> {
               Row(
                 children: [
                   Icon(
-                    Icons.home_repair_service,
+                    Icons.person,
                     color: Color.fromRGBO(14, 54, 115, 1),
                     size: 24,
                   ),
@@ -284,7 +291,7 @@ class _UsuariosState extends State<Usuarios> {
                   },
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
               onChanged: (_) => _filterUsuarios(),
@@ -296,7 +303,7 @@ class _UsuariosState extends State<Usuarios> {
             : filteredUsuarios.isEmpty
                 ? Center(child: Text('No se encontraron usuarios'))
                 : SizedBox(
-                    height: 280,
+                    height: 250,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: filteredUsuarios.length,
@@ -305,100 +312,171 @@ class _UsuariosState extends State<Usuarios> {
                         return GestureDetector(
                           onTap: () => _showUserOptions(context, usuario),
                           child: Container(
-                            width: 250,
-                            margin: EdgeInsets.all(8),
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${usuario['nombre']} ${usuario['apellido']}' ??
-                                          'Sin nombre',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: Color.fromRGBO(14, 54, 115, 1),
+                            width: 300,
+                            margin: EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            child: Stack(
+                              children: [
+                                // Fondo con gradiente
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Color.fromRGBO(14, 54, 115, 1),
+                                        Color.fromRGBO(54, 94, 155, 1),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                ),
+                                // Contenido
+                                Padding(
+                                  padding: EdgeInsets.all(20),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Foto de perfil y nombre
+                                      Row(
+                                        children: [
+                                          Container(
+                                            width: 80,
+                                            height: 80,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                  color: Colors.white,
+                                                  width: 3),
+                                              image: DecorationImage(
+                                                fit: BoxFit.cover,
+                                                image: AssetImage(
+                                                    'assets/icon/setting.png'),
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  '${usuario['nombre']} ${usuario['apellido']}' ??
+                                                      'Sin nombre',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 20,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 4),
+                                                Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white
+                                                        .withOpacity(0.2),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            15),
+                                                  ),
+                                                  child: Text(
+                                                    usuario['rol'] ?? 'N/A',
+                                                    style: TextStyle(
+                                                        color: Colors.white),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 24),
+                                      // Información de contacto
+                                      // InfoItem(
+                                      //     icon: Icons.email,
+                                      //     value: usuario['email'] ?? 'N/A'),
+                                      // InfoItem(
+                                      //     icon: Icons.credit_card,
+                                      //     value: usuario['cedula'] ?? 'N/A'),
+                                      InfoItem(
+                                          icon: Icons.phone,
+                                          value: usuario['telefono'] ?? 'N/A'),
+                                      InfoItem(
+                                          icon: Icons.home,
+                                          value: usuario['albergue']
+                                                  ['nombre'] ??
+                                              'N/A'),
+                                    ],
+                                  ),
+                                ),
+                                // Decoración geométrica
+                                Positioned(
+                                  right: -20,
+                                  bottom: -20,
+                                  child: Container(
+                                    width: 100,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 40,
+                                  top: -30,
+                                  child: Transform.rotate(
+                                    angle: 0.3,
+                                    child: Container(
+                                      width: 80,
+                                      height: 80,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
                                       ),
                                     ),
-                                    SizedBox(height: 16),
-                                    InfoRow(
-                                      icon: Icons.email,
-                                      label: 'Email',
-                                      value: usuario['email'] ?? 'N/A',
-                                    ),
-                                    SizedBox(height: 8),
-                                    InfoRow(
-                                      icon: Icons.credit_card,
-                                      label: 'Cédula',
-                                      value: usuario['cedula'] ?? 'N/A',
-                                    ),
-                                    SizedBox(height: 8),
-                                    InfoRow(
-                                      icon: Icons.phone,
-                                      label: 'Teléfono',
-                                      value: usuario['telefono'] ?? 'N/A',
-                                    ),
-                                    SizedBox(height: 8),
-                                    InfoRow(
-                                      icon: Icons.person,
-                                      label: 'Rol',
-                                      value: usuario['rol'] ?? 'N/A',
-                                    ),
-                                    SizedBox(height: 8),
-                                    InfoRow(
-                                      icon: Icons.home,
-                                      label: 'Albergue',
-                                      value: usuario['albergue']['nombre'] ??
-                                          'N/A',
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
                         );
                       },
                     ),
-                  ),
+                  )
       ],
     );
   }
 }
 
-class InfoRow extends StatelessWidget {
+class InfoItem extends StatelessWidget {
   final IconData icon;
-  final String label;
-  final dynamic value;
+  final String value;
 
-  const InfoRow({
-    Key? key,
-    required this.icon,
-    required this.label,
-    required this.value,
-  }) : super(key: key);
+  const InfoItem({Key? key, required this.icon, required this.value})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: Color.fromRGBO(14, 54, 115, 0.8)),
-        SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            '$label: ${value is bool ? (value ? 'Sí' : 'No') : value.toString()}',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.white.withOpacity(0.7)),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(color: Colors.white, fontSize: 16),
+              overflow: TextOverflow.ellipsis,
             ),
-            overflow: TextOverflow.ellipsis,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

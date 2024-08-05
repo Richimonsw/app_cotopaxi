@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +15,7 @@ class ProductTransferScreen extends StatefulWidget {
 }
 
 class _ProductTransferScreenState extends State<ProductTransferScreen> {
+  final String? baseURL = dotenv.env['BaseURL'];
   final _formKey = GlobalKey<FormState>();
   List<Map<String, dynamic>> productosATransferir = [];
   String? bodegaDestinoId;
@@ -37,7 +39,7 @@ class _ProductTransferScreenState extends State<ProductTransferScreen> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:5000/api/bodega'),
+        Uri.parse(baseURL! + 'bodega'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -96,7 +98,7 @@ class _ProductTransferScreenState extends State<ProductTransferScreen> {
         }
 
         final response = await http.post(
-          Uri.parse('http://10.0.2.2:5000/api/productos/transferirProducto'),
+          Uri.parse(baseURL! + 'productos/transferirProducto'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',

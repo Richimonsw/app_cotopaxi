@@ -1,6 +1,7 @@
 import 'package:app_cotopaxi/components/Albergues/Administradores.dart';
 import 'package:app_cotopaxi/components/Albergues/Bodegas.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -16,6 +17,7 @@ class ContenidoScreen extends StatefulWidget {
 }
 
 class _ContenidoScreenState extends State<ContenidoScreen> {
+  final String? baseURL = dotenv.env['BaseURL'];
   List<dynamic> ciudadanos = [];
   bool isLoading = false;
   String searchText = '';
@@ -45,8 +47,7 @@ class _ContenidoScreenState extends State<ContenidoScreen> {
       }
 
       final response = await http.get(
-        Uri.parse(
-            'http://10.0.2.2:5000/api/ciudadano/$albergueId/ciudadanos'),
+        Uri.parse(baseURL! +  'ciudadano/$albergueId/ciudadanos'),
         headers: {
           'Authorization': 'Bearer $token',
         },

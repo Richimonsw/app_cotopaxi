@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +14,7 @@ class ZonaRiesgoEditScreen extends StatefulWidget {
 }
 
 class _ZonaRiesgoEditScreenState extends State<ZonaRiesgoEditScreen> {
+  final String? baseURL = dotenv.env['BaseURL'];
   late TextEditingController _nombreController;
   late bool _esZonaDeRiesgo;
 
@@ -53,8 +55,7 @@ class _ZonaRiesgoEditScreenState extends State<ZonaRiesgoEditScreen> {
       String? token = prefs.getString('token');
 
       final response = await http.put(
-        Uri.parse(
-            'http://10.0.2.2:5000/api/domicilios/${widget.zonaRiesgo['_id']}'),
+        Uri.parse(baseURL! +  'domicilios/${widget.zonaRiesgo['_id']}'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

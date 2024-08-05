@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +14,7 @@ class ProductCreateScreen extends StatefulWidget {
 }
 
 class _ProductCreateScreenState extends State<ProductCreateScreen> {
+  final String? baseURL = dotenv.env['BaseURL'];
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nombreController = TextEditingController();
   final TextEditingController _codigoController = TextEditingController();
@@ -38,7 +40,7 @@ class _ProductCreateScreenState extends State<ProductCreateScreen> {
         }
 
         final response = await http.post(
-          Uri.parse('http://10.0.2.2:5000/api/productos/register'),
+          Uri.parse(baseURL! + 'productos/register'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',

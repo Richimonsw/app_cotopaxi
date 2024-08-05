@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app_cotopaxi/paginas/login.dart';
 import 'package:app_cotopaxi/paginas/navbar.dart';
-
-void main() {
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+void main() async {
+  await dotenv.load(fileName: "assets/.env");
   runApp(MyApp());
 }
 

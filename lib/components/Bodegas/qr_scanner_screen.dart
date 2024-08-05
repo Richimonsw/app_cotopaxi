@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -15,6 +16,7 @@ class QRScannerScreen extends StatefulWidget {
 }
 
 class _QRScannerScreenState extends State<QRScannerScreen> {
+  final String? baseURL = dotenv.env['BaseURL'];
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? controller;
   bool isScanning = true;
@@ -53,7 +55,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         }
 
         final response = await http.post(
-          Uri.parse('http://10.0.2.2:5000/api/productos/actualizarProductoPorQR'),
+          Uri.parse(baseURL! +  'productos/actualizarProductoPorQR'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
@@ -69,11 +71,9 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           if (responseData['status'] == 'error') {
             _playError();
             setState(() => scanResult = 'error');
-            _showMessage(responseData['message']);
           } else {
             _playSuccess();
             setState(() => scanResult = 'success');
-            _showMessage(responseData['message']);
           }
         } else {
           throw Exception('Failed to process QR');
@@ -82,7 +82,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         print('Error processing QR: $e');
         _playError();
         setState(() => scanResult = 'error');
-        _showMessage('Error al procesar el código QR');
       }
 
       Future.delayed(Duration(seconds: 3), () {
