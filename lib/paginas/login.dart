@@ -155,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
     final String name = _nameController.text.trim();
     final String password = _passwordController.text.trim();
     final String apiUrl =
-        'https://bd45-201-183-161-189.ngrok-free.app/api/ciudadano/login';
+        'http://10.0.2.2:5000/api/ciudadano/login';
     var body = {
       'nombre': name,
       'cedula': password,
@@ -165,7 +165,7 @@ class _LoginPageState extends State<LoginPage> {
     var body2 = jsonEncode(body);
 
     final String apiUrlAdmin =
-        'https://bd45-201-183-161-189.ngrok-free.app/api/usuario/login';
+        'http://10.0.2.2:5000/api/usuario/login';
     var bodyAdmin = {
       'nombre': name,
       'password': password,

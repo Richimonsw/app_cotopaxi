@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:app_cotopaxi/components/Accesibilidad.dart';
 import 'package:app_cotopaxi/components/Albergues.dart';
+import 'package:app_cotopaxi/components/ListCiudadanos.dart';
 import 'package:app_cotopaxi/components/RegistrosRapidos.dart';
 import 'package:app_cotopaxi/components/SitioSeguros.dart';
 import 'package:app_cotopaxi/components/Usuarios.dart';
@@ -411,21 +412,25 @@ class _ProfilePageState extends State<ProfilePage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 if (_userRole != "admin_general")
-                                  Text(
-                                    'ALBERGUE',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold),
+                                  Column(
+                                    children: [
+                                      Text(
+                                        'ALBERGUE',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(
+                                        _albergue,
+                                        style: TextStyle(
+                                          color: const Color.fromARGB(
+                                              255, 250, 239, 239),
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                Text(
-                                  _albergue,
-                                  style: TextStyle(
-                                    color: const Color.fromARGB(
-                                        255, 250, 239, 239),
-                                    fontSize: 14,
-                                  ),
-                                ),
                                 if (_userRole == "admin_general")
                                   Image.asset(
                                     'assets/icon/setting.png', // Asegúrate de que la extensión sea correcta
@@ -494,6 +499,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         SizedBox(height: 4),
                         Accesibilidad(),
                       ] else if (_userRole == "admin_general") ...[
+                        SizedBox(height: 4),
+                        ListadoCiudadanos(),
                         SizedBox(height: 4),
                         RegistroRapido(),
                         SizedBox(height: 10),

@@ -1,4 +1,7 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ZonaRiesgoEditScreen extends StatefulWidget {
   final Map<String, dynamic> zonaRiesgo;
@@ -25,6 +28,51 @@ class _ZonaRiesgoEditScreenState extends State<ZonaRiesgoEditScreen> {
   void dispose() {
     _nombreController.dispose();
     super.dispose();
+  }
+
+  Future<void> _editZonaRiesgo(BuildContext context) async {
+    final updatedZonaRiesgo = {
+      ...widget.zonaRiesgo,
+      'nombre': _nombreController.text,
+      'zonaDeRiesgo': _esZonaDeRiesgo,
+    };
+
+    final fieldsToRemove = [
+      '_id',
+      'createdAt',
+      'updatedAt',
+      '__v',
+    ];
+
+    for (var field in fieldsToRemove) {
+      updatedZonaRiesgo.remove(field);
+    }
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
+
+      final response = await http.put(
+        Uri.parse(
+            'http://10.0.2.2:5000/api/domicilios/${widget.zonaRiesgo['_id']}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(updatedZonaRiesgo),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Zona de riesgo actualizada exitosamente')),
+        ); // Redirigir a la pestaña anterior
+      } else {
+        throw Exception('Failed to update zona de riesgo: ${response.body}');
+      }
+    } catch (e) {
+      print('Error updating zona de riesgo: $e');
+    }
+    Navigator.pop(context, true); // Redirigir a la pestaña anterior
   }
 
   @override
@@ -58,16 +106,7 @@ class _ZonaRiesgoEditScreenState extends State<ZonaRiesgoEditScreen> {
             ElevatedButton(
               child: Text('Guardar Cambios'),
               onPressed: () {
-                // Aquí implementarías la lógica para guardar los cambios
-                // Por ejemplo:
-                final updatedZonaRiesgo = {
-                  ...widget.zonaRiesgo,
-                  'nombre': _nombreController.text,
-                  'zonaDeRiesgo': _esZonaDeRiesgo,
-                };
-                // Aquí podrías enviar updatedZonaRiesgo a tu backend
-
-                Navigator.pop(context, updatedZonaRiesgo);
+                _editZonaRiesgo(context);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(14, 54, 115, 1),

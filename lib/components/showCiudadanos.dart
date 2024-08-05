@@ -1,21 +1,14 @@
-import 'package:app_cotopaxi/components/Albergues/Administradores.dart';
-import 'package:app_cotopaxi/components/Albergues/Bodegas.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ContenidoScreen extends StatefulWidget {
-  final Map<String, dynamic> albergue;
-
-  ContenidoScreen({Key? key, required this.albergue}) : super(key: key);
-
+class ShowCiudadanos extends StatefulWidget {
   @override
-  _ContenidoScreenState createState() => _ContenidoScreenState();
+  _ShowCiudadanoScreenState createState() => _ShowCiudadanoScreenState();
 }
 
-class _ContenidoScreenState extends State<ContenidoScreen> {
+class _ShowCiudadanoScreenState extends State<ShowCiudadanos> {
   List<dynamic> ciudadanos = [];
   bool isLoading = false;
   String searchText = '';
@@ -39,26 +32,21 @@ class _ContenidoScreenState extends State<ContenidoScreen> {
         throw Exception('No se encontró el token de autenticación');
       }
 
-      final albergueId = widget.albergue['_id']?.toString();
-      if (albergueId == null) {
-        throw Exception('Albergue ID is null');
-      }
-
       final response = await http.get(
-        Uri.parse(
-            'http://10.0.2.2:5000/api/ciudadano/$albergueId/ciudadanos'),
+        Uri.parse('http://10.0.2.2:5000/api/ciudadano/ciudadanosDeTodosLosAlbergues/'),
         headers: {
           'Authorization': 'Bearer $token',
         },
       );
 
       if (response.statusCode == 200) {
+        ciudadanos = json.decode(response.body);
+
         setState(() {
-          ciudadanos = json.decode(response.body);
           isLoading = false;
         });
       } else {
-        throw Exception('Failed to load ciudadanos');
+        throw Exception('Failed to load ciudadano');
       }
     } catch (e) {
       print('Error fetching ciudadanos: $e');
@@ -71,13 +59,11 @@ class _ContenidoScreenState extends State<ContenidoScreen> {
     }
   }
 
-  
   @override
   Widget build(BuildContext context) {
-    String albergueId = widget.albergue['_id']?.toString() ?? '';
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.albergue['nombre']?.toString() ?? 'Albergue'),
+        title: Text('Ciudadanos generales'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -85,8 +71,6 @@ class _ContenidoScreenState extends State<ContenidoScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Administradores(albergueId: albergueId),
-              Bodegas(albergueId: albergueId),
               SizedBox(height: 20),
               Text(
                 'Ciudadanos',
@@ -94,7 +78,7 @@ class _ContenidoScreenState extends State<ContenidoScreen> {
               ),
               TextField(
                 decoration: InputDecoration(
-                  hintText: 'Buscar por nombre, cedula',
+                  hintText: 'Buscar por nombre',
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -103,7 +87,7 @@ class _ContenidoScreenState extends State<ContenidoScreen> {
                 },
               ),
               SizedBox(height: 20),
-              isLoading ? CircularProgressIndicator() : _buildCiudadanosTable(),
+              isLoading ? CircularProgressIndicator() : _buildProductosTable(),
             ],
           ),
         ),
@@ -111,10 +95,10 @@ class _ContenidoScreenState extends State<ContenidoScreen> {
     );
   }
 
-  Widget _buildCiudadanosTable() {
+  Widget _buildProductosTable() {
     final filteredCiudadanos = ciudadanos
         .where((ciudadano) =>
-            ciudadano['cedula']
+            ciudadano['nombre']
                 ?.toString()
                 .toLowerCase()
                 .contains(searchText.toLowerCase()) ??
@@ -122,11 +106,12 @@ class _ContenidoScreenState extends State<ContenidoScreen> {
         .toList();
 
     final columns = [
+      {'title': 'Estado', 'dataIndex': 'salvaldo'},
+      {'title': 'Albergue', 'dataIndex': 'albergue.nombre'},
       {'title': 'Nombre', 'dataIndex': 'nombre'},
       {'title': 'Apellido', 'dataIndex': 'apellido'},
-      {'title': 'Edad', 'dataIndex': 'edad'},
-      {'title': 'Teléfono', 'dataIndex': 'telefono'},
       {'title': 'Cedula', 'dataIndex': 'cedula'},
+      {'title': 'Edad', 'dataIndex': 'edad'},
       {'title': 'Email', 'dataIndex': 'email'},
       {'title': 'Enfermedades', 'dataIndex': 'enfermedades'},
       {'title': 'Medicamentos', 'dataIndex': 'medicamentos'},
@@ -144,13 +129,31 @@ class _ContenidoScreenState extends State<ContenidoScreen> {
         rows: filteredCiudadanos.map((ciudadano) {
           return DataRow(
             cells: columns.map((column) {
-              final value = ciudadano[column['dataIndex']]?.toString() ?? 'N/A';
-              if (column['dataIndex'] == 'medicamentos') {
+              final dataIndex = column['dataIndex']!;
+              String value = 'N/A';
+
+              if (dataIndex.contains('.')) {
+                // Acceder a propiedades anidadas
+                List<String> keys = dataIndex.split('.');
+                dynamic nestedValue = ciudadano;
+                for (String key in keys) {
+                  nestedValue = nestedValue[key];
+                  if (nestedValue == null) break;
+                }
+                value = nestedValue?.toString() ?? 'N/A';
+              } else {
+                value = ciudadano[dataIndex]?.toString() ?? 'N/A';
+              }
+
+              if (dataIndex == 'medicamentos') {
                 // Asumiendo que medicamentos es una lista
                 final medicamentos =
                     (ciudadano['medicamentos'] as List?)?.join(', ') ?? 'N/A';
                 return DataCell(Text(medicamentos));
-              } else if (column['dataIndex'] == 'acciones') {
+              } else if (dataIndex == 'salvaldo') {
+                value = (ciudadano['salvaldo'] == true) ? 'SALVADO' : 'NO SALVADO';
+                return DataCell(Text(value));
+              } else if (dataIndex == 'acciones') {
                 return DataCell(
                   Row(
                     children: [

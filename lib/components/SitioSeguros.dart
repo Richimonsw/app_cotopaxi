@@ -148,7 +148,7 @@ class _SitiosSegurosState extends State<SitiosSeguros> {
 
         final response = await http.delete(
           Uri.parse(
-              'https://bd45-201-183-161-189.ngrok-free.app/api/sitioSeguro/${sitioSeguro['_id']}'),
+              'http://10.0.2.2:5000/api/sitioSeguro/${sitioSeguro['_id']}'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
@@ -188,7 +188,7 @@ class _SitiosSegurosState extends State<SitiosSeguros> {
 
       final response = await http.get(
         Uri.parse(
-            'https://bd45-201-183-161-189.ngrok-free.app/api/sitioSeguro'),
+            'http://10.0.2.2:5000/api/sitioSeguro'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -226,7 +226,12 @@ class _SitiosSegurosState extends State<SitiosSeguros> {
       MaterialPageRoute(
         builder: (context) => SitioSeguroEditScreen(sitioSeguro: sitioSeguro),
       ),
-    );
+    ).then((value) {
+      if (value == true) {
+        // Si el usuario fue editado exitosamente, actualiza la lista de usuarios
+        fetchSitiosSeguros();
+      }
+    });
   }
 
   @override

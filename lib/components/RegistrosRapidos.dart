@@ -2,6 +2,8 @@ import 'package:app_cotopaxi/components/Albergues/RegistroAlbergueForm.dart';
 import 'package:app_cotopaxi/components/SitioSeguros/RegistroSitioSeguroForm.dart';
 import 'package:app_cotopaxi/components/Usuarios/RegistroUsuarioForm%20.dart';
 import 'package:app_cotopaxi/components/ZonaRiesgo/RegistroZodaRiesgoForm.dart';
+import 'package:app_cotopaxi/components/ZonasRiesgo.dart';
+import 'package:app_cotopaxi/paginas/perfil.dart';
 import 'package:flutter/material.dart';
 
 class RegistroRapido extends StatelessWidget {
@@ -52,7 +54,17 @@ class RegistroRapido extends StatelessWidget {
                               MaterialPageRoute(
                                 builder: (context) => RegistroUsuarioForm(),
                               ),
-                            );
+                            ).then((value) {
+                              if (value == true) {
+                                // Recargar la vista principal
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProfilePage(),
+                                  ),
+                                );
+                              }
+                            });
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,7 +117,17 @@ class RegistroRapido extends StatelessWidget {
                               MaterialPageRoute(
                                 builder: (context) => RegistroAlbergueForm(),
                               ),
-                            );
+                            ).then((value) {
+                              if (value == true) {
+                                // Recargar la vista principal
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProfilePage(),
+                                  ),
+                                );
+                              }
+                            });
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -158,7 +180,17 @@ class RegistroRapido extends StatelessWidget {
                               MaterialPageRoute(
                                 builder: (context) => RegistroSitioSeguroForm(),
                               ),
-                            );
+                            ).then((value) {
+                              if (value == true) {
+                                // Recargar la vista principal
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProfilePage(),
+                                  ),
+                                );
+                              }
+                            });
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -216,7 +248,17 @@ class RegistroRapido extends StatelessWidget {
                               MaterialPageRoute(
                                 builder: (context) => RegistroZonaRiesgoForm(),
                               ),
-                            );
+                            ).then((value) {
+                              if (value == true) {
+                                // Recargar la vista principal
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProfilePage(),
+                                  ),
+                                );
+                              }
+                            });
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,

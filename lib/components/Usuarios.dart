@@ -126,7 +126,12 @@ class _UsuariosState extends State<Usuarios> {
       MaterialPageRoute(
         builder: (context) => UserEditScreen(usuario: usuario),
       ),
-    );
+    ).then((value) {
+      if (value == true) {
+        // Si el usuario fue editado exitosamente, actualiza la lista de usuarios
+        fetchUsuarios();
+      }
+    });
   }
 
   Future<void> _deleteUser(BuildContext context, dynamic usuario) async {
@@ -165,7 +170,7 @@ class _UsuariosState extends State<Usuarios> {
 
         final response = await http.delete(
           Uri.parse(
-              'https://bd45-201-183-161-189.ngrok-free.app/api/usuario/${usuario['_id']}'),
+              'http://10.0.2.2:5000/api/usuario/${usuario['_id']}'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
@@ -204,7 +209,7 @@ class _UsuariosState extends State<Usuarios> {
       }
 
       final response = await http.get(
-        Uri.parse('https://bd45-201-183-161-189.ngrok-free.app/api/usuario'),
+        Uri.parse('http://10.0.2.2:5000/api/usuario'),
         headers: {
           'Authorization': 'Bearer $token',
         },

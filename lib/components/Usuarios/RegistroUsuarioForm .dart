@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -25,7 +26,7 @@ class RegistroUsuarioForm extends HookWidget {
       String? token = prefs.getString('token');
 
       final response = await http.get(
-        Uri.parse('https://bd45-201-183-161-189.ngrok-free.app/api/albergue'),
+        Uri.parse('http://10.0.2.2:5000/api/albergue'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -49,8 +50,7 @@ class RegistroUsuarioForm extends HookWidget {
       String? token = prefs.getString('token');
 
       final response = await http.post(
-        Uri.parse(
-            'https://f18c-201-183-161-189.ngrok-free.app/api/usuario/register'),
+        Uri.parse('http://10.0.2.2:5000/api/usuario/register'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -71,7 +71,7 @@ class RegistroUsuarioForm extends HookWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Usuario registrado exitosamente')),
         );
-        Navigator.pop(context); // Redirigir a la pestaña anterior
+        Navigator.pop(context, true); // Redirigir a la pestaña anterior
       } else {
         final error = json.decode(response.body)['error'];
         showDialog(
@@ -113,6 +113,9 @@ class RegistroUsuarioForm extends HookWidget {
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor ingrese su nombre';
+                          } else if (!RegExp(r'^[a-zA-Z\s]+$')
+                              .hasMatch(value)) {
+                            return 'Solo se permiten letras';
                           }
                           return null;
                         },
@@ -124,6 +127,9 @@ class RegistroUsuarioForm extends HookWidget {
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor ingrese su apellido';
+                          } else if (!RegExp(r'^[a-zA-Z\s]+$')
+                              .hasMatch(value)) {
+                            return 'Solo se permiten letras';
                           }
                           return null;
                         },
@@ -132,6 +138,7 @@ class RegistroUsuarioForm extends HookWidget {
                       _buildTextFormField(
                         controller: emailController,
                         labelText: 'Email',
+                        keyboardType: TextInputType.emailAddress,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor ingrese su email';
@@ -145,10 +152,17 @@ class RegistroUsuarioForm extends HookWidget {
                       SizedBox(height: 20),
                       _buildTextFormField(
                         controller: cedulaController,
-                        labelText: 'Cedula',
+                        labelText: 'Cédula',
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(10),
+                        ],
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor ingrese su cédula';
+                          } else if (value.length != 10) {
+                            return 'La cédula debe tener 10 dígitos';
                           }
                           return null;
                         },
@@ -170,10 +184,17 @@ class RegistroUsuarioForm extends HookWidget {
                       SizedBox(height: 20),
                       _buildTextFormField(
                         controller: telefonoController,
-                        labelText: 'Telefono',
+                        labelText: 'Teléfono',
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(10),
+                        ],
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor ingrese su teléfono';
+                          } else if (value.length != 10) {
+                            return 'El teléfono debe tener 10 dígitos';
                           }
                           return null;
                         },
@@ -242,11 +263,13 @@ class RegistroUsuarioForm extends HookWidget {
     );
   }
 
-  Widget _buildTextFormField({
+   Widget _buildTextFormField({
     required TextEditingController controller,
     required String labelText,
     bool obscureText = false,
     required String? Function(String?) validator,
+    List<TextInputFormatter>? inputFormatters,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return TextFormField(
       controller: controller,
@@ -256,6 +279,8 @@ class RegistroUsuarioForm extends HookWidget {
         border: OutlineInputBorder(),
       ),
       validator: validator,
+      inputFormatters: inputFormatters,
+      keyboardType: keyboardType,
     );
   }
 

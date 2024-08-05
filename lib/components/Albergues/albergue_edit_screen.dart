@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AlbergueEditScreen extends StatefulWidget {
   final Map<String, dynamic> albergue;
@@ -44,6 +47,62 @@ class _UserEditScreenState extends State<AlbergueEditScreen> {
     super.dispose();
   }
 
+  Future<void> _editAlbergue(BuildContext context) async {
+    final updatedAlbergue = {
+      ...widget.albergue,
+      'nombre': _nombreController.text,
+      'capacidadCiudadanos': ciudadanosMaxController.text,
+      'capacidadBodegas': bodegasMaxController.text,
+      'capacidadUsuarios': usuariosMaxController.text,
+      'cordenadas_x': _cordenadasXController.text,
+      'cordenadas_y': _cordenadasYController.text,
+    };
+
+    final fieldsToRemove = [
+      '_id',
+      'ciudadanos',
+      'usuarios',
+      'bodegas',
+      'createdAt',
+      'updatedAt',
+      '__v',
+      'ciudadanosCount',
+      'usuariosCount',
+      'bodegasCount'
+    ];
+
+    for (var field in fieldsToRemove) {
+      updatedAlbergue.remove(field);
+    }
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
+
+      final response = await http.put(
+        Uri.parse(
+            'http://10.0.2.2:5000/api/albergue/${widget.albergue['_id']}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(updatedAlbergue),
+      );
+
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Albergue actualizada exitosamente')),
+        );
+      } else {
+        throw Exception('Failed to update albergue: ${response.body}');
+      }
+    } catch (e) {
+      print('Error updating albergue: $e');
+    }
+    Navigator.pop(context, true);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,9 +142,7 @@ class _UserEditScreenState extends State<AlbergueEditScreen> {
             ElevatedButton(
               child: Text('Guardar Cambios'),
               onPressed: () {
-                // Aquí implementarías la lógica para guardar los cambios
-                // Por ahora, solo cerramos la pantalla
-                Navigator.pop(context);
+                _editAlbergue(context);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(14, 54, 115, 1),

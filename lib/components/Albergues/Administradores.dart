@@ -38,11 +38,10 @@ class _AdministradoresState extends State<Administradores> {
       }
       final response = await http.get(
         Uri.parse(
-            'https://bd45-201-183-161-189.ngrok-free.app/api/usuario/${widget.albergueId}/albergue'),
+            'http://10.0.2.2:5000/api/usuario/${widget.albergueId}/albergue'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
-      print(response.body);
       if (response.statusCode == 200) {
         setState(() {
           administradores = json.decode(response.body);
@@ -102,7 +101,12 @@ class _AdministradoresState extends State<Administradores> {
       MaterialPageRoute(
         builder: (context) => UserInfoScreen(usuario: administrador),
       ),
-    );
+    ).then((value) {
+      if (value == true) {
+        // Si el usuario fue editado exitosamente, actualiza la lista de usuarios
+        fetchAdministradores();
+      }
+    });
   }
 
   @override

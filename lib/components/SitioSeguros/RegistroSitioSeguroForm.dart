@@ -20,7 +20,7 @@ class RegistroSitioSeguroForm extends HookWidget {
 
       final response = await http.post(
         Uri.parse(
-            'https://bd45-201-183-161-189.ngrok-free.app/api/sitioSeguro/register'),
+            'http://10.0.2.2:5000/api/sitioSeguro/register'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -36,7 +36,7 @@ class RegistroSitioSeguroForm extends HookWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Sitio seguro registrado exitosamente')),
         );
-        Navigator.pop(context); // Redirigir a la pestaña anterior
+        Navigator.pop(context, true);  // Redirigir a la pestaña anterior
       } else {
         final error = json.decode(response.body)['error'];
         showDialog(

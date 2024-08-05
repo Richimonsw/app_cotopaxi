@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -23,7 +24,7 @@ class RegistroAlbergueForm extends HookWidget {
 
       final response = await http.post(
         Uri.parse(
-            'https://bd45-201-183-161-189.ngrok-free.app/api/albergue/register'),
+            'http://10.0.2.2:5000/api/albergue/register'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -42,7 +43,7 @@ class RegistroAlbergueForm extends HookWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Albergue registrado exitosamente')),
         );
-        Navigator.pop(context); // Redirigir a la pestaña anterior
+        Navigator.pop(context, true); // Redirigir a la pestaña anterior
       } else {
         final error = json.decode(response.body)['error'];
         showDialog(
@@ -91,7 +92,7 @@ class RegistroAlbergueForm extends HookWidget {
                       SizedBox(height: 20),
                       _buildTextFormField(
                         controller: cordenadasXController,
-                        labelText: 'Cordenadas X',
+                        labelText: 'Cordenadas X', 
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor ingrese la cordenada X';
@@ -114,6 +115,7 @@ class RegistroAlbergueForm extends HookWidget {
                       _buildTextFormField(
                         controller: ciudadanosMaxController,
                         labelText: 'Capacidad de ciudadanos',
+                        keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor ingrese la capacidad de ciudadanos';
@@ -125,7 +127,7 @@ class RegistroAlbergueForm extends HookWidget {
                       _buildTextFormField(
                         controller: usuariosMaxController,
                         labelText: 'Capacidad de usuarios',
-                        obscureText: true,
+                        keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor ingrese la capacidad de usuarios';
@@ -136,7 +138,8 @@ class RegistroAlbergueForm extends HookWidget {
                       SizedBox(height: 20),
                       _buildTextFormField(
                         controller: bodegasMaxController,
-                        labelText: 'Capacidad de bodegas',
+                        labelText: 'Capacidad de bodegas',                       
+                        keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor ingrese la capacidad de bodegas';
@@ -170,6 +173,8 @@ class RegistroAlbergueForm extends HookWidget {
     required String labelText,
     bool obscureText = false,
     required String? Function(String?) validator,
+    List<TextInputFormatter>? inputFormatters,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return TextFormField(
       controller: controller,
@@ -179,6 +184,8 @@ class RegistroAlbergueForm extends HookWidget {
         border: OutlineInputBorder(),
       ),
       validator: validator,
+      inputFormatters: inputFormatters,
+      keyboardType: keyboardType,
     );
   }
 

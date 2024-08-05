@@ -148,7 +148,7 @@ class _ZonasRiesgoState extends State<ZonasRiesgo> {
 
         final response = await http.delete(
           Uri.parse(
-              'https://bd45-201-183-161-189.ngrok-free.app/api/domicilios/${zonaRiesgo['_id']}'),
+              'http://10.0.2.2:5000/api/domicilios/${zonaRiesgo['_id']}'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
@@ -187,7 +187,7 @@ class _ZonasRiesgoState extends State<ZonasRiesgo> {
       }
 
       final response = await http.get(
-        Uri.parse('https://bd45-201-183-161-189.ngrok-free.app/api/domicilios'),
+        Uri.parse('http://10.0.2.2:5000/api/domicilios'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -225,7 +225,11 @@ class _ZonasRiesgoState extends State<ZonasRiesgo> {
       MaterialPageRoute(
         builder: (context) => ZonaRiesgoEditScreen(zonaRiesgo: zonaRiesgo),
       ),
-    );
+    ).then((value) {  
+      if (value == true) {
+        fetchZonasRiesgo();
+      }
+    });
   }
 
   @override

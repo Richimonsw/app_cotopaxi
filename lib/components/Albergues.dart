@@ -53,10 +53,10 @@ class _AlberguesState extends State<Albergues> {
   void _showAlbergueOptions(BuildContext context, dynamic albergue) {
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (BuildContext context) {
+      builder: (BuildContext context) { 
         return Container(
           padding: EdgeInsets.all(20),
           child: Column(
@@ -64,7 +64,7 @@ class _AlberguesState extends State<Albergues> {
             children: [
               Text(
                 '${albergue['nombre']}',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Color.fromRGBO(14, 54, 115, 1),
@@ -74,7 +74,7 @@ class _AlberguesState extends State<Albergues> {
               ListTile(
                 leading:
                     Icon(Icons.login, color: Color.fromRGBO(14, 54, 115, 1)),
-                title: Text('Entrar a la bodega'),
+                title: Text('Entrar al albergue'),
                 onTap: () {
                   Navigator.pop(context);
                   _viewAlbergueContent(context, albergue);
@@ -138,7 +138,12 @@ class _AlberguesState extends State<Albergues> {
       MaterialPageRoute(
         builder: (context) => AlbergueEditScreen(albergue: albergue),
       ),
-    );
+    ).then((value) {
+      if (value == true) {
+        // Si el usuario fue editado exitosamente, actualiza la lista de usuarios
+        fetchAlbergues();
+      }
+    });
   }
 
   Future<void> _deleteAlbergue(BuildContext context, dynamic albergue) async {
@@ -177,7 +182,7 @@ class _AlberguesState extends State<Albergues> {
 
         final response = await http.delete(
           Uri.parse(
-              'https://f18c-201-183-161-189.ngrok-free.app/api/albergue/${albergue['_id']}'),
+              'http://10.0.2.2:5000/api/albergue/${albergue['_id']}'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
@@ -216,7 +221,7 @@ class _AlberguesState extends State<Albergues> {
       }
 
       final response = await http.get(
-        Uri.parse('https://bd45-201-183-161-189.ngrok-free.app/api/albergue'),
+        Uri.parse('http://10.0.2.2:5000/api/albergue'),
         headers: {
           'Authorization': 'Bearer $token',
         },

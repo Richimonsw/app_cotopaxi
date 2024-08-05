@@ -9,7 +9,7 @@ class RegistroZonaRiesgoForm extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final nombreController = useTextEditingController();
-    final zonaDeRiesgoController = useTextEditingController();
+    final zonaDeRiesgoController = useState(false);
     final isLoading = useState(false);
     final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -18,23 +18,22 @@ class RegistroZonaRiesgoForm extends HookWidget {
       String? token = prefs.getString('token');
 
       final response = await http.post(
-        Uri.parse(
-            'https://bd45-201-183-161-189.ngrok-free.app/api/domicilios/register'),
+        Uri.parse('http://10.0.2.2:5000/api/domicilios/register'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
         body: json.encode({
           'nombre': nombreController.text,
-          'zonaDeRiesgo': zonaDeRiesgoController.text,
+          'zonaDeRiesgo': zonaDeRiesgoController.value,
         }),
       );
 
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Zona de riesgo registrado exitosamente')),
+          SnackBar(content: Text('Zona de riesgo registrada exitosamente')),
         );
-        Navigator.pop(context); // Redirigir a la pestaña anterior
+        Navigator.pop(context, true); // Redirigir a la pestaña anterior
       } else {
         final error = json.decode(response.body)['error'];
         showDialog(
@@ -81,15 +80,12 @@ class RegistroZonaRiesgoForm extends HookWidget {
                         },
                       ),
                       SizedBox(height: 20),
-                      _buildTextFormField(
-                        controller: zonaDeRiesgoController,
-                        labelText: 'Zona de riesgo',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor ingrese la cordenada X';
-                          }
-                          return null;
+                      _buildSwitch(
+                        value: zonaDeRiesgoController.value,
+                        onChanged: (value) {
+                          zonaDeRiesgoController.value = value;
                         },
+                        labelText: 'Zona de riesgo',
                       ),
                       SizedBox(height: 20),
                       ElevatedButton(
@@ -129,22 +125,20 @@ class RegistroZonaRiesgoForm extends HookWidget {
     );
   }
 
-  Widget _buildDropdownButtonFormField({
-    required String? value,
-    required void Function(String?) onChanged,
+  Widget _buildSwitch({
+    required bool value,
+    required void Function(bool) onChanged,
     required String labelText,
-    required List<DropdownMenuItem<String>> items,
-    String? Function(String?)? validator,
   }) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        labelText: labelText,
-        border: OutlineInputBorder(),
-      ),
-      items: items,
-      validator: validator,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(labelText),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+        ),
+      ],
     );
   }
 }
