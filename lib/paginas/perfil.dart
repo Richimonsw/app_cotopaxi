@@ -8,6 +8,8 @@ import 'package:app_cotopaxi/components/SitioSeguros.dart';
 import 'package:app_cotopaxi/components/Usuarios.dart';
 import 'package:app_cotopaxi/components/ZonasRiesgo.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
@@ -16,6 +18,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'login.dart'; // Importa la página de inicio de sesión
+import 'dart:ui' as ui;
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -23,6 +26,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final String? baseURL = dotenv.env['BaseURL'];
   String _albergue = "";
   String _apellido = "";
   String _cedula = "";
@@ -60,110 +64,238 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // Función para exportar los datos en PDF
   void _exportToPDF() async {
-    // Solicitar permisos de almacenamiento
-    var status = await Permission.storage.request();
-    if (!status.isGranted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Permiso de almacenamiento no concedido.')),
-      );
-      return;
-    }
-
-    final PdfDocument document = PdfDocument();
-    final PdfPage page = document.pages.add();
-
-    final PdfGraphics graphics = page.graphics;
-    final PdfFont font = PdfStandardFont(PdfFontFamily.helvetica, 12);
-
-    // Agregar texto al PDF
-    graphics.drawString('Perfil de Usuario', font,
-        bounds: Rect.fromLTWH(0, 0, 200, 30));
-
-    graphics.drawString('Nombre: $_nombre', font,
-        bounds: Rect.fromLTWH(0, 30, 200, 30));
-    graphics.drawString('Apellido: $_apellido', font,
-        bounds: Rect.fromLTWH(0, 60, 200, 30));
-    graphics.drawString('Albergue: $_albergue', font,
-        bounds: Rect.fromLTWH(0, 90, 200, 30));
-    graphics.drawString('$_cedula', font,
-        bounds: Rect.fromLTWH(0, 30, 200, 30));
-
-    if (_imagenPath.isNotEmpty) {
-      // Agregar imagen de perfil
-      final PdfBitmap profileImage =
-          PdfBitmap(await _getImageBytes(_imagenPath));
-      graphics.drawImage(profileImage, Rect.fromLTWH(0, 130, 150, 150));
-    }
-
-    if (_qrImagePath.isNotEmpty) {
-      // Agregar imagen QR
-      final PdfBitmap qrImage = PdfBitmap(await _getImageBytes(_qrImagePath));
-      graphics.drawImage(qrImage, Rect.fromLTWH(0, 300, 150, 150));
-    }
-
-    // Guardar el documento en un archivo
-    final List<int> bytes = await document.save();
-    document.dispose();
-
-    // Obtener el directorio de descargas
-    final directory = await getExternalStorageDirectory();
-    if (directory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content:
-                Text('No se pudo obtener el directorio de almacenamiento.')),
-      );
-      return;
-    }
-    final downloadsDirectory = Directory('${directory.path}/Download');
-    if (!await downloadsDirectory.exists()) {
-      await downloadsDirectory.create(recursive: true);
-    }
-
-    final File file = File('${downloadsDirectory.path}/perfil_usuario.pdf');
-    await file.writeAsBytes(bytes);
-
-    // Notificar al usuario
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Perfil exportado como PDF en ${file.path}')),
+    // Mostrar el diálogo de progreso
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 20),
+              Text("Generando Tarjeta de Identidad..."),
+            ],
+          ),
+        );
+      },
     );
+
+    try {
+      var status = await Permission.storage.request();
+      if (!status.isGranted) {
+        if (mounted) {
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Permiso de almacenamiento no concedido.')),
+          );
+        }
+        return;
+      }
+
+      final PdfDocument document = PdfDocument();
+      final PdfPage page = document.pages.add();
+      final PdfGraphics graphics = page.graphics;
+
+      final PdfFont titleFont = PdfStandardFont(PdfFontFamily.helvetica, 30,
+          style: PdfFontStyle.bold);
+      final PdfFont subtitleFont = PdfStandardFont(PdfFontFamily.helvetica, 18);
+      final PdfFont bodyFont = PdfStandardFont(PdfFontFamily.helvetica, 12);
+
+      graphics.drawRectangle(
+          brush: PdfSolidBrush(PdfColor(230, 230, 250)),
+          bounds: Rect.fromLTWH(
+              0, 0, page.getClientSize().width, page.getClientSize().height));
+
+      graphics.drawString('Tarjeta de Identidad', titleFont,
+          brush: PdfSolidBrush(PdfColor(75, 0, 130)),
+          bounds: Rect.fromLTWH(0, 40, page.getClientSize().width, 50),
+          format: PdfStringFormat(alignment: PdfTextAlignment.center));
+
+      if (_imagenPath.isNotEmpty) {
+        try {
+          final Uint8List imageBytes = await _getImageBytes(_imagenPath);
+          final PdfBitmap profileImage = PdfBitmap(imageBytes);
+          graphics.drawImage(
+              profileImage,
+              Rect.fromLTWH(
+                  page.getClientSize().width / 2 - 75, 100, 150, 150));
+        } catch (e) {
+          print('Error al cargar la imagen de perfil: $e');
+        }
+      }
+
+      double yOffset = 270;
+      void addUserInfo(String label, String value) {
+        graphics.drawString('$label:', subtitleFont,
+            brush: PdfSolidBrush(PdfColor(75, 0, 130)),
+            bounds: Rect.fromLTWH(50, yOffset, 150, 30));
+        graphics.drawString(value, bodyFont,
+            brush: PdfSolidBrush(PdfColor(0, 0, 0)),
+            bounds: Rect.fromLTWH(
+                200, yOffset, page.getClientSize().width - 250, 30));
+        yOffset += 40;
+      }
+
+      addUserInfo('Nombre', '$_nombre $_apellido');
+      addUserInfo('Albergue', _albergue);
+      addUserInfo('Cédula', _cedula);
+
+      if (_qrImagePath.isNotEmpty) {
+        try {
+          final Uint8List qrBytes = await _getImageBytes(_qrImagePath);
+          final PdfBitmap qrImage = PdfBitmap(qrBytes);
+          graphics.drawImage(
+              qrImage,
+              Rect.fromLTWH(
+                  page.getClientSize().width / 2 - 75, yOffset + 20, 150, 150));
+        } catch (e) {
+          print('Error al cargar la imagen QR: $e');
+        }
+      }
+
+      final List<int> bytes = await document.save();
+      document.dispose();
+
+      Directory? directory;
+      if (Platform.isAndroid) {
+        directory = Directory('/storage/emulated/0/Download');
+      } else if (Platform.isIOS) {
+        directory = await getApplicationDocumentsDirectory();
+      }
+
+      if (directory == null) {
+        throw Exception('No se pudo obtener el directorio de descargas.');
+      }
+
+      final String fileName =
+          'perfil_usuario_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final String filePath = '${directory.path}/$fileName';
+      final File file = File(filePath);
+      await file.writeAsBytes(bytes);
+
+      if (mounted) {
+        Navigator.of(context).pop();
+
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('PDF Generado'),
+              content: Text('El PDF se ha guardado en:\n$filePath'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Error'),
+              content: Text('No se pudo generar el PDF: $e'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
   }
 
-  Future<Uint8List> _getImageBytes(String url) async {
-    final response = await http.get(Uri.parse(url));
-    return response.bodyBytes;
+  Future<Uint8List> _getImageBytes(String imagePath) async {
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      final response = await http.get(Uri.parse(imagePath));
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else {
+        throw Exception('Failed to load image from URL');
+      }
+    } else if (imagePath.startsWith('assets/')) {
+      return (await rootBundle.load(imagePath)).buffer.asUint8List();
+    } else {
+      final file = File(imagePath);
+      if (await file.exists()) {
+        return await file.readAsBytes();
+      } else {
+        throw Exception('Image file not found: $imagePath');
+      }
+    }
   }
 
   // Método para editar la foto de perfil
   Future<void> _editProfileImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
 
-    if (pickedFile != null) {
-      String imageUrl = await _uploadImageToCloudinary(File(pickedFile.path));
-      if (imageUrl.isNotEmpty) {
-        bool success = await _updateProfileImageInDatabase(imageUrl);
-        if (success) {
-          setState(() {
-            _imagenPath = imageUrl;
-          });
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('profileImageUrl', _imagenPath);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text('Foto de perfil actualizada correctamente.')),
+    // Mostrar un diálogo para que el usuario elija entre cámara y galería
+    final ImageSource? source = await showDialog<ImageSource>(
+        context: context,
+        builder: (BuildContext context) {
+          return SimpleDialog(
+            title: const Text('Seleccionar fuente de imagen'),
+            children: <Widget>[
+              SimpleDialogOption(
+                onPressed: () {
+                  Navigator.pop(context, ImageSource.camera);
+                },
+                child: const Text('Cámara'),
+              ),
+              SimpleDialogOption(
+                onPressed: () {
+                  Navigator.pop(context, ImageSource.gallery);
+                },
+                child: const Text('Galería'),
+              ),
+            ],
           );
+        });
+
+    if (source != null) {
+      final pickedFile = await picker.pickImage(source: source);
+
+      if (pickedFile != null) {
+        String imageUrl = await _uploadImageToCloudinary(File(pickedFile.path));
+        if (imageUrl.isNotEmpty) {
+          bool success = await _updateProfileImageInDatabase(imageUrl);
+          if (success) {
+            setState(() {
+              _imagenPath = imageUrl;
+            });
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setString('profileImageUrl', _imagenPath);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text('Foto de perfil actualizada correctamente.')),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(
+                      'Error al actualizar la imagen en la base de datos.')),
+            );
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content:
-                    Text('Error al actualizar la imagen en la base de datos.')),
+            SnackBar(content: Text('Error al subir la imagen a Cloudinary.')),
           );
         }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al subir la imagen a Cloudinary.')),
-        );
       }
     }
   }
@@ -189,29 +321,43 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<bool> _updateProfileImageInDatabase(String imageUrl) async {
-    String apiUrl =
-        "https://sistema-cotopaxi-backend.onrender.com/api/updateProfileImage";
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String cedula = prefs.getString('cedula') ??
-        ''; // Recuperar la cédula de SharedPreferences
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cedula = prefs.getString('cedula') ?? '';
+      final userRole = prefs.getString('rol') ?? '';
 
-    print(
-        "Sending updateProfileImage request with cedula: $cedula and imgPerfil: $imageUrl");
+      final apiUrl = _getApiUrlBasedOnRole(userRole);
 
-    var response = await http.post(
-      Uri.parse(apiUrl),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'cedula': cedula, 'imgPerfil': imageUrl}),
-    );
-
-    if (response.statusCode == 200) {
-      print('Imagen de perfil actualizada en la base de datos');
-      return true;
-    } else {
       print(
-          'Error al actualizar la imagen de perfil en la base de datos: ${response.statusCode} ${response.body}');
+          "Sending updateProfileImage request with cedula: $cedula and imgPerfil: $imageUrl");
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'cedula': cedula, 'imgPerfil': imageUrl}),
+      );
+
+      if (response.statusCode == 200) {
+        print('Imagen de perfil actualizada en la base de datos');
+        return true;
+      } else {
+        print(
+            'Error al actualizar la imagen de perfil en la base de datos: ${response.statusCode} ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Error inesperado: $e');
       return false;
     }
+  }
+
+  String _getApiUrlBasedOnRole(String userRole) {
+    const adminRoles = ["admin_farmaceutico", "admin_zonal", "admin_general"];
+    return adminRoles.contains(userRole)
+        ? '${baseURL!}usuario/updateProfileImage'
+        : '${baseURL!}ciudadano/updateProfileImage';
   }
 
   // Función para cerrar sesión
@@ -347,7 +493,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         icon: Icon(Icons.camera_alt,
                                             color: Colors.black),
                                         onPressed: () {
-                                          // Acción para editar la foto de perfil
+                                          _editProfileImage();
                                         },
                                       ),
                                     ),
@@ -364,7 +510,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     icon: Icon(Icons.camera_alt,
                                         color: Colors.black),
                                     onPressed: () {
-                                      // Acción para editar la foto de perfil
+                                      _editProfileImage();
                                     },
                                   ),
                                 ),

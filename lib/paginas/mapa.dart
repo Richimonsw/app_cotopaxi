@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,6 +14,7 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapWidgetState extends State<MapScreen> {
+  final String? baseURL = dotenv.env['BaseURL'];
   GoogleMapController? mapController;
   List<dynamic> albergues = [];
   List<dynamic> sitiosSeguros = [];
@@ -37,8 +39,11 @@ class _MapWidgetState extends State<MapScreen> {
 
   Future<void> _fetchDataFromServer() async {
     try {
-      final response = await http.get(Uri.parse(
-          'https://sistema-cotopaxi-backend.onrender.com/api/albergues'));
+
+      final response = await http.get(
+        Uri.parse(baseURL! + 'albergue/movil'),
+      );
+      print(response.body);
       if (response.statusCode == 200) {
         setState(() {
           albergues = json.decode(response.body);
@@ -48,8 +53,10 @@ class _MapWidgetState extends State<MapScreen> {
         throw Exception('Failed to load albergues');
       }
 
-      final response2 = await http.get(Uri.parse(
-          'https://sistema-cotopaxi-backend.onrender.com/api/sitiosSeguros'));
+      final response2 = await http.get(
+        Uri.parse(baseURL! + 'sitioSeguro'),
+      );
+      print(response.body);
       if (response2.statusCode == 200) {
         setState(() {
           sitiosSeguros = json.decode(response2.body);
@@ -162,7 +169,6 @@ class _MapWidgetState extends State<MapScreen> {
             child: Container(
               color: Colors.white,
               padding: EdgeInsets.all(8),
-              
             ),
           ),
       ],
@@ -238,8 +244,8 @@ class _MapWidgetState extends State<MapScreen> {
     double shortestDistance = double.infinity;
     LatLng destination = LatLng(0, 0);
     for (dynamic albergue in albergues) {
-      double lat = albergue['coordenadaX'];
-      double lng = albergue['coordenadaY'];
+      double lat = albergue['cordenadas_x'];
+      double lng = albergue['cordenadas_y'];
       double distance = await Geolocator.distanceBetween(
           userPosition.latitude, userPosition.longitude, lat, lng);
       if (distance < shortestDistance) {
@@ -248,8 +254,8 @@ class _MapWidgetState extends State<MapScreen> {
       }
     }
     for (dynamic sitio in sitiosSeguros) {
-      double lat = sitio['coordenadaX'];
-      double lng = sitio['coordenadaY'];
+      double lat = sitio['cordenadas_x'];
+      double lng = sitio['cordenadas_y'];
       double distance = await Geolocator.distanceBetween(
           userPosition.latitude, userPosition.longitude, lat, lng);
       if (distance < shortestDistance) {
@@ -257,7 +263,7 @@ class _MapWidgetState extends State<MapScreen> {
         destination = LatLng(lat, lng);
       }
     }
-     mapController!.animateCamera(
+    mapController!.animateCamera(
       CameraUpdate.newLatLngZoom(destination, 30.0),
     );
 
@@ -279,7 +285,6 @@ class _MapWidgetState extends State<MapScreen> {
         );
       },
     );
-    
   }
 
   Future<void> _openGoogleMaps(
@@ -297,8 +302,8 @@ class _MapWidgetState extends State<MapScreen> {
     double shortestDistance = double.infinity;
     LatLng destination = LatLng(0, 0);
     for (dynamic albergue in albergues) {
-      double lat = albergue['coordenadaX'];
-      double lng = albergue['coordenadaY'];
+      double lat = albergue['cordenadas_x'];
+      double lng = albergue['cordenadas_y'];
       double distance = await Geolocator.distanceBetween(
           userPosition.latitude, userPosition.longitude, lat, lng);
       if (distance < shortestDistance) {
@@ -307,8 +312,8 @@ class _MapWidgetState extends State<MapScreen> {
       }
     }
     for (dynamic sitio in sitiosSeguros) {
-      double lat = sitio['coordenadaX'];
-      double lng = sitio['coordenadaY'];
+      double lat = sitio['cordenadas_x'];
+      double lng = sitio['cordenadas_y'];
       double distance = await Geolocator.distanceBetween(
           userPosition.latitude, userPosition.longitude, lat, lng);
       if (distance < shortestDistance) {
@@ -342,8 +347,8 @@ class _MapWidgetState extends State<MapScreen> {
     Set<Marker> newMarkers = {};
 
     newMarkers.addAll(albergues.map((albergue) {
-      double lat = albergue['coordenadaX'];
-      double lng = albergue['coordenadaY'];
+      double lat = albergue['cordenadas_x'];
+      double lng = albergue['cordenadas_y'];
       String nombre = albergue['nombre'];
 
       return Marker(
@@ -358,8 +363,8 @@ class _MapWidgetState extends State<MapScreen> {
     }));
 
     newMarkers.addAll(sitiosSeguros.map((sitio) {
-      double lat = sitio['coordenadaX'];
-      double lng = sitio['coordenadaY'];
+      double lat = sitio['cordenadas_x'];
+      double lng = sitio['cordenadas_y'];
       String nombre = sitio['nombre'];
 
       return Marker(

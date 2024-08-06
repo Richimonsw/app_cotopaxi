@@ -185,13 +185,14 @@ class _LoginPageState extends State<LoginPage> {
         headers: _headers,
         body: body2,
       );
+      print(response.body);
       if (response.statusCode == 200) {
         Map<String, dynamic> content = json.decode(response.body);
         SharedPreferences prefs = await SharedPreferences.getInstance();
         setState(() {
           prefs.setString("nombres", content["ciudadano"]["nombre"] ?? "");
           prefs.setString("apellidos", content["ciudadano"]["apellido"] ?? "");
-          // Maneja el caso en que albergue es null
+          prefs.setString("token", content["token"]);
           prefs.setString("albergue",
               content["ciudadano"]["albergue"]?["nombre"] ?? "Sin asignar");
           prefs.setString("cedula", content["ciudadano"]["cedula"] ?? "");
