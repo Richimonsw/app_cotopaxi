@@ -511,7 +511,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           _userRole == "admin_farmaceutico") ...[
                         SizedBox(height: 4),
                         Accesibilidad(),
-                        SizedBox(height: 4),
                         Albergues(),
                       ] else if (_userRole == "admin_general") ...[
                         SizedBox(height: 3),

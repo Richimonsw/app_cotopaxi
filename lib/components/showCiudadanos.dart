@@ -35,16 +35,17 @@ class _ShowCiudadanoScreenState extends State<ShowCiudadanos> {
       }
 
       final response = await http.get(
-        Uri.parse(baseURL! +  'ciudadano/ciudadanosDeTodosLosAlbergues/'),
+        Uri.parse(baseURL! + 'ciudadano/ciudadanosDeTodosLosAlbergues/'),
         headers: {
           'Authorization': 'Bearer $token',
         },
       );
 
       if (response.statusCode == 200) {
-        ciudadanos = json.decode(response.body);
+        final List<dynamic> ciudadanosData = json.decode(response.body);
 
         setState(() {
+          ciudadanos = ciudadanosData;
           isLoading = false;
         });
       } else {
@@ -67,37 +68,36 @@ class _ShowCiudadanoScreenState extends State<ShowCiudadanos> {
       appBar: AppBar(
         title: Text('Ciudadanos generales'),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 20),
-              Text(
-                'Ciudadanos',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Buscar por nombre',
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Buscar por nombre',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    searchText = value;
-                  });
-                },
               ),
-              SizedBox(height: 20),
-              isLoading ? CircularProgressIndicator() : _buildProductosTable(),
-            ],
+              onChanged: (value) {
+                setState(() {
+                  searchText = value;
+                });
+              },
+            ),
           ),
-        ),
+          Expanded(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : _buildCiudadanosTable(),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildProductosTable() {
+  Widget _buildCiudadanosTable() {
     final filteredCiudadanos = ciudadanos
         .where((ciudadano) =>
             ciudadano['nombre']
@@ -107,84 +107,75 @@ class _ShowCiudadanoScreenState extends State<ShowCiudadanos> {
             false)
         .toList();
 
-    final columns = [
-      {'title': 'Estado', 'dataIndex': 'salvaldo'},
-      {'title': 'Albergue', 'dataIndex': 'albergue.nombre'},
-      {'title': 'Nombre', 'dataIndex': 'nombre'},
-      {'title': 'Apellido', 'dataIndex': 'apellido'},
-      {'title': 'Cedula', 'dataIndex': 'cedula'},
-      {'title': 'Edad', 'dataIndex': 'edad'},
-      {'title': 'Email', 'dataIndex': 'email'},
-      {'title': 'Enfermedades', 'dataIndex': 'enfermedades'},
-      {'title': 'Medicamentos', 'dataIndex': 'medicamentos'},
-      {'title': 'Acciones', 'dataIndex': 'acciones'},
-    ];
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: filteredCiudadanos.length,
+      itemBuilder: (context, index) {
+        final ciudadano = filteredCiudadanos[index];
+        return Card(
+          elevation: 4,
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          child: ExpansionTile(
+            leading: CircleAvatar(
+              backgroundColor:
+                  ciudadano['salvaldo'] == true ? Colors.green : Colors.red,
+              child: Icon(
+                ciudadano['salvaldo'] == true ? Icons.check : Icons.close,
+                color: Colors.white,
+              ),
+            ),
+            title: Text(
+              '${ciudadano['nombre']} ${ciudadano['apellido']}',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text('Cédula: ${ciudadano['cedula']}'),
+            children: [
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoRow(
+                        'Albergue',
+                        ciudadano['albergue'] != null
+                            ? ciudadano['albergue']['nombre']
+                            : 'N/A',
+                        Icons.home),
+                    _buildInfoRow(
+                        'Edad', ciudadano['edad'].toString(), Icons.cake),
+                    _buildInfoRow('Email', ciudadano['email'], Icons.email),
+                    _buildInfoRow(
+                        'Enfermedades',
+                        (ciudadano['enfermedades'] as List?)?.join(', ') ??
+                            'N/A',
+                        Icons.medical_services),
+                    _buildInfoRow(
+                        'Medicamentos',
+                        (ciudadano['medicamentos'] as List?)?.join(', ') ??
+                            'N/A',
+                        Icons.medication),
+    
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columns: columns
-            .map((column) => DataColumn(
-                  label: Text(column['title']!),
-                ))
-            .toList(),
-        rows: filteredCiudadanos.map((ciudadano) {
-          return DataRow(
-            cells: columns.map((column) {
-              final dataIndex = column['dataIndex']!;
-              String value = 'N/A';
-
-              if (dataIndex.contains('.')) {
-                // Acceder a propiedades anidadas
-                List<String> keys = dataIndex.split('.');
-                dynamic nestedValue = ciudadano;
-                for (String key in keys) {
-                  nestedValue = nestedValue[key];
-                  if (nestedValue == null) break;
-                }
-                value = nestedValue?.toString() ?? 'N/A';
-              } else {
-                value = ciudadano[dataIndex]?.toString() ?? 'N/A';
-              }
-
-              if (dataIndex == 'medicamentos') {
-                // Asumiendo que medicamentos es una lista
-                final medicamentos =
-                    (ciudadano['medicamentos'] as List?)?.join(', ') ?? 'N/A';
-                return DataCell(Text(medicamentos));
-              } else if (dataIndex == 'salvaldo') {
-                value = (ciudadano['salvaldo'] == true) ? 'SALVADO' : 'NO SALVADO';
-                return DataCell(Text(value));
-              } else if (dataIndex == 'acciones') {
-                return DataCell(
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () => handleEdit(ciudadano),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () => handleDelete(ciudadano),
-                      ),
-                    ],
-                  ),
-                );
-              } else {
-                return DataCell(Text(value));
-              }
-            }).toList(),
-          );
-        }).toList(),
+  Widget _buildInfoRow(String label, String value, IconData icon) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.grey[600]),
+          SizedBox(width: 8),
+          Text('$label: ', style: TextStyle(fontWeight: FontWeight.bold)),
+          Expanded(child: Text(value)),
+        ],
       ),
     );
   }
-}
-
-void handleEdit(Map<String, dynamic> ciudadano) {
-  // Implementa la lógica de edición aquí
-}
-
-void handleDelete(Map<String, dynamic> ciudadano) {
-  // Implementa la lógica de eliminación aquí
 }

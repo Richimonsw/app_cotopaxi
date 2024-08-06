@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -64,7 +65,7 @@ class _UserEditScreenState extends State<SitioSeguroEditScreen> {
       String? token = prefs.getString('token');
 
       final response = await http.put(
-        Uri.parse(baseURL! +  'sitioSeguro/${widget.sitioSeguro['_id']}'),
+        Uri.parse(baseURL! + 'sitioSeguro/${widget.sitioSeguro['_id']}'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -85,43 +86,82 @@ class _UserEditScreenState extends State<SitioSeguroEditScreen> {
     }
     Navigator.pop(context, true);
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Editar Sitio Seguro'),
+        title: Text(
+          'Editar Sitio Seguro',
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
         backgroundColor: Color.fromRGBO(14, 54, 115, 1),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
-            TextField(
-              controller: _nombreController,
-              decoration: InputDecoration(labelText: 'Nombre'),
-            ),
-            TextField(
-              controller: _cordenadaXController,
-              decoration: InputDecoration(labelText: 'Cordenada X'),
-            ),
-            TextField(
-              controller: _cordenadaYController,
-              decoration: InputDecoration(labelText: 'Cordenada Y'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              child: Text('Guardar Cambios'),
-              onPressed: () {
-                _editSitioSeguro(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromRGBO(14, 54, 115, 1),
+            SizedBox(height: 16),
+            _buildTextField(_nombreController, 'Nombre', TextInputType.text),
+            SizedBox(height: 16),
+            _buildTextField(
+                _cordenadaXController, 'Cordenadas X', TextInputType.text),
+            SizedBox(height: 16),
+            _buildTextField(
+                _cordenadaYController, 'Cordenadas Y', TextInputType.text),
+            SizedBox(height: 32),
+            Center(
+              child: ElevatedButton(
+                child: Text(
+                  'Guardar Cambios',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: () {
+                  _editSitioSeguro(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  backgroundColor: Color.fromRGBO(14, 54, 115, 1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    TextInputType inputType, {
+    bool enabled = true,
+    int? maxLength,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        filled: true,
+        fillColor: Colors.grey[200],
+        enabled: enabled,
+      ),
+      keyboardType: inputType,
+      inputFormatters: [
+        if (inputType == TextInputType.number)
+          FilteringTextInputFormatter.digitsOnly,
+        if (maxLength != null) LengthLimitingTextInputFormatter(maxLength),
+      ],
     );
   }
 }

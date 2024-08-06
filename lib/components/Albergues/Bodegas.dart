@@ -20,13 +20,42 @@ class Bodegas extends StatefulWidget {
 class _BodegasState extends State<Bodegas> {
   final String? baseURL = dotenv.env['BaseURL'];
   List<dynamic> bodegas = [];
+  List<dynamic> filteredBodegas = [];
   bool isLoading = true;
+  bool isSearching = false;
   String? error;
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     fetchBodegas();
+    searchController.addListener(_filterBodegas);
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      isSearching = !isSearching;
+      if (!isSearching) {
+        searchController.clear();
+        filteredBodegas = bodegas;
+      }
+    });
+  }
+
+  void _filterBodegas() {
+    String query = searchController.text.toLowerCase();
+    setState(() {
+      filteredBodegas = bodegas.where((bodega) {
+        return bodega['nombre'].toString().toLowerCase().contains(query);
+      }).toList();
+    });
   }
 
   Future<void> fetchBodegas() async {
@@ -51,6 +80,7 @@ class _BodegasState extends State<Bodegas> {
         final data = json.decode(response.body);
         setState(() {
           bodegas = data['data'];
+          filteredBodegas = bodegas;
           isLoading = false;
         });
       } else {
@@ -229,7 +259,7 @@ class _BodegasState extends State<Bodegas> {
               Row(
                 children: [
                   Icon(
-                    Icons.home_repair_service,
+                    Icons.store,
                     color: Color.fromRGBO(14, 54, 115, 1),
                     size: 24,
                   ),
@@ -244,73 +274,148 @@ class _BodegasState extends State<Bodegas> {
                   ),
                 ],
               ),
+              IconButton(
+                icon: Icon(isSearching ? Icons.close : Icons.search),
+                onPressed: _toggleSearch,
+                color: Color.fromRGBO(14, 54, 115, 1),
+              ),
             ],
           ),
         ),
+        if (isSearching)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                hintText: 'Buscar bodega...',
+                prefixIcon: Icon(Icons.search),
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () {
+                    searchController.clear();
+                    _filterBodegas();
+                  },
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              onChanged: (_) => _filterBodegas(),
+            ),
+          ),
         SizedBox(height: 5),
         isLoading
             ? Center(child: CircularProgressIndicator())
-            : bodegas.isEmpty
-                ? Center(child: _buildNoBodegas())
+            : filteredBodegas.isEmpty
+                ? Center(child: Text('No se encontraron Bodegas'))
                 : SizedBox(
                     height: 280,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: bodegas.length,
+                      itemCount: filteredBodegas.length,
                       itemBuilder: (context, index) {
-                        final bodega = bodegas[index];
+                        final bodega = filteredBodegas[index];
                         return GestureDetector(
                           onTap: () => _showBodegaOptions(context, bodega),
                           child: Container(
-                            width: 250,
-                            margin: EdgeInsets.all(8),
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${bodega['nombre'].toString()}' ??
-                                          'Sin nombre',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: Color.fromRGBO(14, 54, 115, 1),
-                                      ),
+                            width: 300,
+                            margin: EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            child: Stack(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Color(0xFF2E8B57), // Verde mar oscuro
+                                        Color(0xFF3CB371), // Verde mar medio
+                                      ],
                                     ),
-                                    SizedBox(height: 16),
-                                    InfoRow(
-                                      icon: Icons.email,
-                                      label: 'Categoria',
-                                      value: bodega['categoria'] ?? 'N/A',
-                                    ),
-                                    SizedBox(height: 8),
-                                    InfoRow(
-                                      icon: Icons.credit_card,
-                                      label: 'Capacidad',
-                                      value: bodega['capacidad'] ?? 'N/A',
-                                    ),
-                                    SizedBox(height: 8),
-                                    InfoRow(
-                                      icon: Icons.phone,
-                                      label: 'cantidadProductos',
-                                      value:
-                                          bodega['cantidadProductos'] ?? 'N/A',
-                                    ),
-                                    SizedBox(height: 8),
-                                    InfoRow(
-                                      icon: Icons.person,
-                                      label: 'Alerta',
-                                      value:
-                                          bodega['alerta'] ?? 'Bodega estable',
-                                    ),
-                                  ],
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
                                 ),
-                              ),
+                                Padding(
+                                  padding: EdgeInsets.all(20),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.store,
+                                              color: Colors.white, size: 32),
+                                          SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              bodega['nombre'] ?? 'Sin nombre',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20,
+                                              ),
+                                              overflow: TextOverflow
+                                                  .visible, // Permite que el texto desborde y sea visible
+                                              maxLines: null,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 20),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.category,
+                                              color: Colors.white70, size: 18),
+                                          SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              'Categoria: ${bodega['categoria'] ?? 'N/A'}',
+                                              style: TextStyle(
+                                                  color: Colors.white70,
+                                                  fontSize: 14),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 20),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          InfoColumn(
+                                            icon: Icons.production_quantity_limits,
+                                            label: 'Capacidad',
+                                            value:
+                                                '${bodega['cantidadProductos'] ?? 0}/${bodega['capacidad']}',
+                                          ),
+                                          InfoColumn(
+                                            icon: Icons.warning_amber_rounded,
+                                            label: 'Alerta',
+                                            value: bodega['alerta'] ??
+                                                'Bodega estable',
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Elemento decorativo
+                                Positioned(
+                                  right: -30,
+                                  top: -30,
+                                  child: Container(
+                                    width: 100,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white10,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -320,61 +425,30 @@ class _BodegasState extends State<Bodegas> {
       ],
     );
   }
-
-  Widget _buildNoBodegas() {
-    return Center(
-      child: Container(
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.yellow[100],
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(FontAwesomeIcons.exclamationCircle,
-                color: Colors.yellow[700], size: 48),
-            SizedBox(height: 8),
-            Text(
-              'No hay ninguna bodega asignada al albergue todavía.',
-              style: TextStyle(color: Colors.yellow[700]),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
-class InfoRow extends StatelessWidget {
+class InfoColumn extends StatelessWidget {
   final IconData icon;
   final String label;
-  final dynamic value;
+  final String value;
 
-  const InfoRow({
-    Key? key,
-    required this.icon,
-    required this.label,
-    required this.value,
-  }) : super(key: key);
+  const InfoColumn(
+      {Key? key, required this.icon, required this.label, required this.value})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Icon(icon, size: 18, color: Color.fromRGBO(14, 54, 115, 0.8)),
-        SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            '$label: ${value is bool ? (value ? 'Sí' : 'No') : value.toString()}',
+        Icon(icon, color: Colors.white, size: 24),
+        SizedBox(height: 4),
+        Text(label, style: TextStyle(color: Colors.white70, fontSize: 12)),
+        SizedBox(height: 2),
+        Text(value,
             style: TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16)),
       ],
     );
   }

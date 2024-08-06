@@ -347,7 +347,9 @@ class _ZonasRiesgoState extends State<ZonasRiesgo> {
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 20,
                                               ),
-                                              overflow: TextOverflow.ellipsis,
+                                              overflow: TextOverflow
+                                                  .visible, // Permite que el texto desborde y sea visible
+                                              maxLines: null,
                                             ),
                                           ),
                                         ],

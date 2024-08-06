@@ -46,16 +46,21 @@ class _ContenidoScreenState extends State<ContenidoScreen> {
         throw Exception('Albergue ID is null');
       }
 
+      if (baseURL == null) {
+        throw Exception('Base URL is null');
+      }
+
       final response = await http.get(
-        Uri.parse(baseURL! +  'ciudadano/$albergueId/ciudadanos'),
+        Uri.parse(baseURL! + 'ciudadano/$albergueId/ciudadanos'),
         headers: {
           'Authorization': 'Bearer $token',
         },
       );
 
       if (response.statusCode == 200) {
+        final List<dynamic> ciudadanosData = json.decode(response.body);
         setState(() {
-          ciudadanos = json.decode(response.body);
+          ciudadanos = ciudadanosData;
           isLoading = false;
         });
       } else {
@@ -67,12 +72,11 @@ class _ContenidoScreenState extends State<ContenidoScreen> {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar ciudadanos')),
+        SnackBar(content: Text('Error al cargar ciudadanos: $e')),
       );
     }
   }
 
-  
   @override
   Widget build(BuildContext context) {
     String albergueId = widget.albergue['_id']?.toString() ?? '';
@@ -93,18 +97,29 @@ class _ContenidoScreenState extends State<ContenidoScreen> {
                 'Ciudadanos',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Buscar por nombre, cedula',
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Buscar por nombre o cédula',
+                    prefixIcon: Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      searchText = value;
+                    });
+                  },
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    searchText = value;
-                  });
-                },
               ),
-              SizedBox(height: 20),
-              isLoading ? CircularProgressIndicator() : _buildCiudadanosTable(),
+              SizedBox(
+                height: 400, // Ajusta el tamaño según sea necesario
+                child: isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : _buildCiudadanosTable(),
+              ),
             ],
           ),
         ),
@@ -115,72 +130,71 @@ class _ContenidoScreenState extends State<ContenidoScreen> {
   Widget _buildCiudadanosTable() {
     final filteredCiudadanos = ciudadanos
         .where((ciudadano) =>
-            ciudadano['cedula']
+            ciudadano['nombre']
                 ?.toString()
+                .toLowerCase()
+                .contains(searchText.toLowerCase()) ??
+            false || ciudadano['cedula']
+                !.toString()
                 .toLowerCase()
                 .contains(searchText.toLowerCase()) ??
             false)
         .toList();
 
-    final columns = [
-      {'title': 'Nombre', 'dataIndex': 'nombre'},
-      {'title': 'Apellido', 'dataIndex': 'apellido'},
-      {'title': 'Edad', 'dataIndex': 'edad'},
-      {'title': 'Teléfono', 'dataIndex': 'telefono'},
-      {'title': 'Cedula', 'dataIndex': 'cedula'},
-      {'title': 'Email', 'dataIndex': 'email'},
-      {'title': 'Enfermedades', 'dataIndex': 'enfermedades'},
-      {'title': 'Medicamentos', 'dataIndex': 'medicamentos'},
-      {'title': 'Acciones', 'dataIndex': 'acciones'},
-    ];
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: filteredCiudadanos.length,
+      itemBuilder: (context, index) {
+        final ciudadano = filteredCiudadanos[index];
+        return Card(
+          elevation: 4,
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          child: ExpansionTile(
+            title: Text(
+              '${ciudadano['nombre']} ${ciudadano['apellido']}',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text('Cédula: ${ciudadano['cedula']}'),
+            children: [
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoRow(
+                        'Edad', ciudadano['edad'].toString(), Icons.cake),
+                    _buildInfoRow('Email', ciudadano['email'], Icons.email),
+                    _buildInfoRow(
+                        'Enfermedades',
+                        (ciudadano['enfermedades'] as List?)?.join(', ') ??
+                            'N/A',
+                        Icons.medical_services),
+                    _buildInfoRow(
+                        'Medicamentos',
+                        (ciudadano['medicamentos'] as List?)?.join(', ') ??
+                            'N/A',
+                        Icons.medication),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columns: columns
-            .map((column) => DataColumn(
-                  label: Text(column['title']!),
-                ))
-            .toList(),
-        rows: filteredCiudadanos.map((ciudadano) {
-          return DataRow(
-            cells: columns.map((column) {
-              final value = ciudadano[column['dataIndex']]?.toString() ?? 'N/A';
-              if (column['dataIndex'] == 'medicamentos') {
-                // Asumiendo que medicamentos es una lista
-                final medicamentos =
-                    (ciudadano['medicamentos'] as List?)?.join(', ') ?? 'N/A';
-                return DataCell(Text(medicamentos));
-              } else if (column['dataIndex'] == 'acciones') {
-                return DataCell(
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () => handleEdit(ciudadano),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () => handleDelete(ciudadano),
-                      ),
-                    ],
-                  ),
-                );
-              } else {
-                return DataCell(Text(value));
-              }
-            }).toList(),
-          );
-        }).toList(),
+  Widget _buildInfoRow(String label, String value, IconData icon) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.grey[600]),
+          SizedBox(width: 8),
+          Text('$label: ', style: TextStyle(fontWeight: FontWeight.bold)),
+          Expanded(child: Text(value)),
+        ],
       ),
     );
   }
-}
-
-void handleEdit(Map<String, dynamic> ciudadano) {
-  // Implementa la lógica de edición aquí
-}
-
-void handleDelete(Map<String, dynamic> ciudadano) {
-  // Implementa la lógica de eliminación aquí
 }

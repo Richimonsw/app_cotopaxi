@@ -30,15 +30,18 @@ class _UserEditScreenState extends State<UserEditScreen> {
   void initState() {
     super.initState();
     _nombreController = TextEditingController(text: widget.usuario['nombre']);
-    _apellidoController = TextEditingController(text: widget.usuario['apellido']);
+    _apellidoController =
+        TextEditingController(text: widget.usuario['apellido']);
     _emailController = TextEditingController(text: widget.usuario['email']);
     _cedulaController = TextEditingController(text: widget.usuario['cedula']);
-    _telefonoController = TextEditingController(text: widget.usuario['telefono']);
+    _telefonoController =
+        TextEditingController(text: widget.usuario['telefono']);
     _rolController = TextEditingController(text: widget.usuario['rol']);
-    _albergueController = TextEditingController(text: widget.usuario['albergue']['nombre']);
+    _albergueController =
+        TextEditingController(text: widget.usuario['albergue']['nombre']);
 
     _selectedAlbergue = widget.usuario['albergue']['_id'];
-    
+
     fetchAlbergues();
   }
 
@@ -59,7 +62,7 @@ class _UserEditScreenState extends State<UserEditScreen> {
     String? token = prefs.getString('token');
 
     final response = await http.get(
-      Uri.parse(baseURL! +  'albergue'),
+      Uri.parse(baseURL! + 'albergue'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -69,7 +72,8 @@ class _UserEditScreenState extends State<UserEditScreen> {
     if (response.statusCode == 200) {
       setState(() {
         albergues = json.decode(response.body);
-        if (!albergues.any((albergue) => albergue['_id'] == _selectedAlbergue)) {
+        if (!albergues
+            .any((albergue) => albergue['_id'] == _selectedAlbergue)) {
           _selectedAlbergue = null;
         }
       });
@@ -120,60 +124,61 @@ class _UserEditScreenState extends State<UserEditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Editar Usuario'),
+        title: Text(
+          'Editar Usuario',
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
         backgroundColor: Color.fromRGBO(14, 54, 115, 1),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _nombreController,
-              decoration: InputDecoration(labelText: 'Nombre'),
-              keyboardType: TextInputType.text,
-            ),
-            TextField(
-              controller: _apellidoController,
-              decoration: InputDecoration(labelText: 'Apellido'),
-              keyboardType: TextInputType.text,
-            ),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            TextField(
-              controller: _cedulaController,
-              decoration: InputDecoration(
-                labelText: 'Cédula',
-                enabled: false,
+            Text(
+              'Información Personal',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color.fromRGBO(14, 54, 115, 1),
               ),
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10),
-              ],
             ),
-            TextField(
-              controller: _telefonoController,
-              decoration: InputDecoration(labelText: 'Teléfono'),
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10),
-              ],
+            SizedBox(height: 16),
+            _buildTextField(_nombreController, 'Nombre', TextInputType.text),
+            SizedBox(height: 16),
+            _buildTextField(
+                _apellidoController, 'Apellido', TextInputType.text),
+            SizedBox(height: 16),
+            _buildTextField(
+                _emailController, 'Email', TextInputType.emailAddress),
+            SizedBox(height: 16),
+            _buildTextField(_cedulaController, 'Cédula', TextInputType.number,
+                enabled: false, maxLength: 10),
+            SizedBox(height: 16),
+            _buildTextField(
+                _telefonoController, 'Teléfono', TextInputType.number,
+                maxLength: 10),
+            SizedBox(height: 32),
+            Text(
+              'Detalles del Rol',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color.fromRGBO(14, 54, 115, 1),
+              ),
             ),
-            DropdownButtonFormField<String>(
-              value: _rolController.text.isEmpty ? null : _rolController.text,
-              onChanged: (value) {
+            SizedBox(height: 16),
+            _buildDropdownField(
+              'Rol',
+              _rolController.text.isEmpty ? null : _rolController.text,
+              (value) {
                 setState(() {
                   _rolController.text = value!;
                 });
               },
-              decoration: InputDecoration(
-                labelText: 'Rol',
-              ),
-              items: [
+              [
                 DropdownMenuItem(
                   value: 'admin_zonal',
                   child: Text('Admin Zonal'),
@@ -184,36 +189,94 @@ class _UserEditScreenState extends State<UserEditScreen> {
                 ),
               ],
             ),
-            DropdownButtonFormField<String>(
-              value: _selectedAlbergue,
-              onChanged: (value) {
+            SizedBox(height: 16),
+            _buildDropdownField(
+              'Albergue',
+              _selectedAlbergue,
+              (value) {
                 setState(() {
                   _selectedAlbergue = value;
                 });
               },
-              decoration: InputDecoration(
-                labelText: 'Albergue',
-              ),
-              items: albergues.map<DropdownMenuItem<String>>((albergue) {
+              albergues.map<DropdownMenuItem<String>>((albergue) {
                 return DropdownMenuItem<String>(
                   value: albergue['_id'],
                   child: Text(albergue['nombre']),
                 );
               }).toList(),
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              child: Text('Guardar Cambios'),
-              onPressed: () {
-                _editUser(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromRGBO(14, 54, 115, 1),
+            SizedBox(height: 32),
+            Center(
+              child: ElevatedButton(
+                child: Text(
+                  'Guardar Cambios',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: () {
+                  _editUser(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  backgroundColor: Color.fromRGBO(14, 54, 115, 1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    TextInputType inputType, {
+    bool enabled = true,
+    int? maxLength,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        filled: true,
+        fillColor: Colors.grey[200],
+        enabled: enabled,
+      ),
+      keyboardType: inputType,
+      inputFormatters: [
+        if (inputType == TextInputType.number)
+          FilteringTextInputFormatter.digitsOnly,
+        if (maxLength != null) LengthLimitingTextInputFormatter(maxLength),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField(
+    String label,
+    String? value,
+    ValueChanged<String?>? onChanged,
+    List<DropdownMenuItem<String>> items,
+  ) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        filled: true,
+        fillColor: Colors.grey[200],
+      ),
+      items: items,
     );
   }
 }

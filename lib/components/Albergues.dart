@@ -227,7 +227,6 @@ class _AlberguesState extends State<Albergues> {
           'Authorization': 'Bearer $token',
         },
       );
-      print(response);
 
       if (response.statusCode == 200) {
         setState(() {
@@ -359,7 +358,9 @@ class _AlberguesState extends State<Albergues> {
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 20,
                                               ),
-                                              overflow: TextOverflow.ellipsis,
+                                              overflow: TextOverflow
+                                                  .visible, // Permite que el texto desborde y sea visible
+                                              maxLines: null,
                                             ),
                                           ),
                                         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -108,50 +109,103 @@ class _UserEditScreenState extends State<AlbergueEditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Editar Albergue'),
+        title: Text(
+          'Editar Albergue',
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
         backgroundColor: Color.fromRGBO(14, 54, 115, 1),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _nombreController,
-              decoration: InputDecoration(labelText: 'Nombre'),
+            Text(
+              'Detalles del Albergue',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color.fromRGBO(14, 54, 115, 1),
+              ),
             ),
-            TextField(
-              controller: _cordenadasXController,
-              decoration: InputDecoration(labelText: 'Cordenadas X'),
+            SizedBox(height: 16),
+            _buildTextField(_nombreController, 'Nombre', TextInputType.number),
+            SizedBox(height: 16),
+            _buildTextField(
+                ciudadanosMaxController, 'Capacidad de ciudadanos', TextInputType.number),
+            SizedBox(height: 16),
+            _buildTextField(
+                usuariosMaxController, 'Capacidad de usuarios', TextInputType.number),
+            SizedBox(height: 16),
+            _buildTextField(
+                bodegasMaxController, 'Capacidad de bodegas', TextInputType.number),
+            SizedBox(height: 16),
+            Text(
+              'Ubicacion',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color.fromRGBO(14, 54, 115, 1),
+              ),
             ),
-            TextField(
-              controller: _cordenadasYController,
-              decoration: InputDecoration(labelText: 'Cordenadas Y'),
-            ),
-            TextField(
-              controller: ciudadanosMaxController,
-              decoration: InputDecoration(labelText: 'Capacidad de ciudadanos'),
-            ),
-            TextField(
-              controller: usuariosMaxController,
-              decoration: InputDecoration(labelText: 'Capacidad de usuarios'),
-            ),
-            TextField(
-              controller: bodegasMaxController,
-              decoration: InputDecoration(labelText: 'Capacidad de bodegas'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              child: Text('Guardar Cambios'),
-              onPressed: () {
-                _editAlbergue(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromRGBO(14, 54, 115, 1),
+            SizedBox(height: 16),
+            _buildTextField(_cordenadasXController, 'Cordenadas X', TextInputType.text),
+            SizedBox(height: 16),
+            _buildTextField(
+                _cordenadasYController, 'Cordenadas Y', TextInputType.text),
+            SizedBox(height: 32),
+            Center(
+              child: ElevatedButton(
+                child: Text(
+                  'Guardar Cambios',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: () {
+                  _editAlbergue(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  backgroundColor: Color.fromRGBO(14, 54, 115, 1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    TextInputType inputType, {
+    bool enabled = true,
+    int? maxLength,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        filled: true,
+        fillColor: Colors.grey[200],
+        enabled: enabled,
+      ),
+      keyboardType: inputType,
+      inputFormatters: [
+        if (inputType == TextInputType.number)
+          FilteringTextInputFormatter.digitsOnly,
+        if (maxLength != null) LengthLimitingTextInputFormatter(maxLength),
+      ],
     );
   }
 }

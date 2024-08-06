@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -55,7 +56,7 @@ class _ZonaRiesgoEditScreenState extends State<ZonaRiesgoEditScreen> {
       String? token = prefs.getString('token');
 
       final response = await http.put(
-        Uri.parse(baseURL! +  'domicilios/${widget.zonaRiesgo['_id']}'),
+        Uri.parse(baseURL! + 'domicilios/${widget.zonaRiesgo['_id']}'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -80,7 +81,12 @@ class _ZonaRiesgoEditScreenState extends State<ZonaRiesgoEditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Editar Zona de riesgo'),
+        title: Text(
+          'Editar Zona de riesgo',
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
         backgroundColor: Color.fromRGBO(14, 54, 115, 1),
       ),
       body: SingleChildScrollView(
@@ -88,10 +94,8 @@ class _ZonaRiesgoEditScreenState extends State<ZonaRiesgoEditScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _nombreController,
-              decoration: InputDecoration(labelText: 'Nombre'),
-            ),
+            SizedBox(height: 16),
+            _buildTextField(_nombreController, 'Nombre', TextInputType.text),
             SizedBox(height: 20),
             Text('¿Es zona de riesgo?', style: TextStyle(fontSize: 16)),
             Switch(
@@ -103,19 +107,57 @@ class _ZonaRiesgoEditScreenState extends State<ZonaRiesgoEditScreen> {
               },
               activeColor: Color.fromRGBO(14, 54, 115, 1),
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              child: Text('Guardar Cambios'),
-              onPressed: () {
-                _editZonaRiesgo(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromRGBO(14, 54, 115, 1),
+            SizedBox(height: 32),
+            Center(
+              child: ElevatedButton(
+                child: Text(
+                  'Guardar Cambios',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: () {
+                  _editZonaRiesgo(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  backgroundColor: Color.fromRGBO(14, 54, 115, 1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    TextInputType inputType, {
+    bool enabled = true,
+    int? maxLength,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        filled: true,
+        fillColor: Colors.grey[200],
+        enabled: enabled,
+      ),
+      keyboardType: inputType,
+      inputFormatters: [
+        if (inputType == TextInputType.number)
+          FilteringTextInputFormatter.digitsOnly,
+        if (maxLength != null) LengthLimitingTextInputFormatter(maxLength),
+      ],
     );
   }
 }

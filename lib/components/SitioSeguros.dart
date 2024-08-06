@@ -348,7 +348,9 @@ class _SitiosSegurosState extends State<SitiosSeguros> {
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 20,
                                               ),
-                                              overflow: TextOverflow.ellipsis,
+                                              overflow: TextOverflow
+                                                  .visible, // Permite que el texto desborde y sea visible
+                                              maxLines: null,
                                             ),
                                           ),
                                         ],
