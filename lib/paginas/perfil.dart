@@ -98,58 +98,61 @@ class _ProfilePageState extends State<ProfilePage> {
       final PdfPage page = document.pages.add();
       final PdfGraphics graphics = page.graphics;
 
+      // Definir tamaño de tarjeta más pequeño
+      double cardWidth = 400;
+      double cardHeight = 250;
+      double xOffset = (page.getClientSize().width - cardWidth) / 2;
+      double yOffset = (page.getClientSize().height - cardHeight) / 2;
+
       final PdfFont titleFont = PdfStandardFont(PdfFontFamily.helvetica, 30,
           style: PdfFontStyle.bold);
       final PdfFont subtitleFont = PdfStandardFont(PdfFontFamily.helvetica, 18);
       final PdfFont bodyFont = PdfStandardFont(PdfFontFamily.helvetica, 12);
 
       graphics.drawRectangle(
-          brush: PdfSolidBrush(PdfColor(230, 230, 250)),
-          bounds: Rect.fromLTWH(
-              0, 0, page.getClientSize().width, page.getClientSize().height));
+        brush: PdfSolidBrush(PdfColor(230, 230, 250)),
+        bounds: Rect.fromLTWH(xOffset, yOffset, cardWidth, cardHeight),
+        pen: PdfPen(PdfColor(75, 0, 130), width: 2),
+      );
 
+      // Título
       graphics.drawString('Tarjeta de Identidad', titleFont,
           brush: PdfSolidBrush(PdfColor(75, 0, 130)),
-          bounds: Rect.fromLTWH(0, 40, page.getClientSize().width, 50),
+          bounds: Rect.fromLTWH(xOffset, yOffset + 10, cardWidth, 30),
           format: PdfStringFormat(alignment: PdfTextAlignment.center));
 
-      if (_imagenPath.isNotEmpty) {
-        try {
-          final Uint8List imageBytes = await _getImageBytes(_imagenPath);
-          final PdfBitmap profileImage = PdfBitmap(imageBytes);
-          graphics.drawImage(
-              profileImage,
-              Rect.fromLTWH(
-                  page.getClientSize().width / 2 - 75, 100, 150, 150));
-        } catch (e) {
-          print('Error al cargar la imagen de perfil: $e');
-        }
-      }
+      // // Imagen de perfil
+      // if (_imagenPath.isNotEmpty) {
+      //   try {
+      //     final Uint8List imageBytes = await _getImageBytes(_imagenPath);
+      //     final PdfBitmap profileImage = PdfBitmap(imageBytes);
+      //     graphics.drawImage(profileImage, Rect.fromLTWH(50, 80, 100, 100));
+      //   } catch (e) {
+      //     print('Error al cargar la imagen de perfil: $e');
+      //   }
+      // }
 
-      double yOffset = 270;
+      // Información del usuario
+      final PdfFont infoFont = PdfStandardFont(PdfFontFamily.helvetica, 12);
+      double textY = yOffset + 50;
       void addUserInfo(String label, String value) {
-        graphics.drawString('$label:', subtitleFont,
-            brush: PdfSolidBrush(PdfColor(75, 0, 130)),
-            bounds: Rect.fromLTWH(50, yOffset, 150, 30));
-        graphics.drawString(value, bodyFont,
+        graphics.drawString('$label: $value', infoFont,
             brush: PdfSolidBrush(PdfColor(0, 0, 0)),
-            bounds: Rect.fromLTWH(
-                200, yOffset, page.getClientSize().width - 250, 30));
-        yOffset += 40;
+            bounds: Rect.fromLTWH(xOffset + 20, textY, cardWidth - 140, 20));
+        textY += 25;
       }
 
       addUserInfo('Nombre', '$_nombre $_apellido');
       addUserInfo('Albergue', _albergue);
       addUserInfo('Cédula', _cedula);
 
+      // Código QR
       if (_qrImagePath.isNotEmpty) {
         try {
           final Uint8List qrBytes = await _getImageBytes(_qrImagePath);
           final PdfBitmap qrImage = PdfBitmap(qrBytes);
-          graphics.drawImage(
-              qrImage,
-              Rect.fromLTWH(
-                  page.getClientSize().width / 2 - 75, yOffset + 20, 150, 150));
+          graphics.drawImage(qrImage,
+              Rect.fromLTWH(xOffset + cardWidth - 120, yOffset + 50, 100, 100));
         } catch (e) {
           print('Error al cargar la imagen QR: $e');
         }
@@ -218,6 +221,11 @@ class _ProfilePageState extends State<ProfilePage> {
         );
       }
     }
+  }
+
+  Future<List<int>> _loadFontData(String path) async {
+    final ByteData bytes = await rootBundle.load(path);
+    return bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes);
   }
 
   Future<Uint8List> _getImageBytes(String imagePath) async {

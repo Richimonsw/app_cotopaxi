@@ -39,7 +39,6 @@ class _MapWidgetState extends State<MapScreen> {
 
   Future<void> _fetchDataFromServer() async {
     try {
-
       final response = await http.get(
         Uri.parse(baseURL! + 'albergue/movil'),
       );
@@ -54,7 +53,7 @@ class _MapWidgetState extends State<MapScreen> {
       }
 
       final response2 = await http.get(
-        Uri.parse(baseURL! + 'sitioSeguro'),
+        Uri.parse(baseURL! + 'sitioSeguro/movil'),
       );
       print(response.body);
       if (response2.statusCode == 200) {
@@ -116,61 +115,74 @@ class _MapWidgetState extends State<MapScreen> {
           polylines: polylines,
         ),
         Positioned(
-          bottom: 125,
-          right: 16,
+          bottom: 20,
+          left: 110,
           child: Column(
             children: [
-              IconButton(
-                icon: Icon(Icons.refresh, color: Colors.blue),
+              _buildMapControlButton(
+                icon: Icons.refresh,
+                iconColor: Colors.white,
+                backgroundColor: Colors.blue,
                 onPressed: _reloadMap,
-                color: Colors.red, // Establece el color de fondo del botón
-              ),
-              Text(
-                "Recargar",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize:
-                      16, // Ajusta el tamaño de la fuente según sea necesario
-                  fontWeight:
-                      FontWeight.bold, // Opcional: Ajusta el peso de la fuente
-                ),
+                label: "Recargar",
               ),
             ],
           ),
         ),
         Positioned(
-          bottom: 70,
-          right: 16,
+          bottom: 20,
+          right: 110,
           child: Column(
             children: [
-              IconButton(
-                icon: Icon(Icons.arrow_forward, color: Colors.green),
+              _buildMapControlButton(
+                icon: Icons.arrow_forward,
+                iconColor: Colors.white,
+                backgroundColor: Colors.green,
                 onPressed: _getUserLocation,
-                color: Colors.red, // Establece el color de fondo del botón
-              ),
-              Text(
-                "Trazar ruta",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize:
-                      16, // Ajusta el tamaño de la fuente según sea necesario
-                  fontWeight:
-                      FontWeight.bold, // Opcional: Ajusta el peso de la fuente
-                ),
+                label: "Trazar ruta",
               ),
             ],
           ),
         ),
-        if (showEvacuationMessage)
-          Positioned(
-            bottom: 72,
-            left: 16,
-            right: 16,
-            child: Container(
-              color: Colors.white,
-              padding: EdgeInsets.all(8),
-            ),
+      ],
+    );
+  }
+
+  Widget _buildMapControlButton({
+    required IconData icon,
+    required Color iconColor,
+    required Color backgroundColor,
+    required VoidCallback onPressed,
+    required String label,
+  }) {
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                offset: Offset(0, 4),
+                blurRadius: 8,
+              ),
+            ],
           ),
+          child: IconButton(
+            icon: Icon(icon, color: iconColor),
+            onPressed: onPressed,
+          ),
+        ),
+        SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }

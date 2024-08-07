@@ -7,6 +7,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'navbar.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
@@ -26,116 +28,139 @@ class _LoginPageState extends State<LoginPage> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        backgroundColor: Color.fromARGB(255, 207, 255, 245),
+        backgroundColor: Color(0xFFF0F8FF),
         body: SafeArea(
           child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                SizedBox(height: 80),
-                Center(
-                  child: ClipOval(
-                    child: Image.network(
-                      'https://res.cloudinary.com/dlyytqayv/image/upload/v1708699571/Cotopaxi/nomjfagmofg2n87kdjyj.jpg',
-                      width: 200,
-                      height: 200,
-                      fit: BoxFit.cover,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  SizedBox(height: 80),
+                  Center(
+                    child: ClipOval(
+                      child: Image.network(
+                        'https://res.cloudinary.com/dlyytqayv/image/upload/v1708699571/Cotopaxi/nomjfagmofg2n87kdjyj.jpg',
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      )
+                          .animate()
+                          .fadeIn(duration: 800.ms)
+                          .slideY(begin: 1.0, end: 0.0),
                     ),
                   ),
-                ),
-                SizedBox(height: 60),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 60),
-                  child: TextFormField(
+                  SizedBox(height: 60),
+                  _buildTextField(
                     controller: _nameController,
-                    decoration: InputDecoration(
-                      hintText: 'Nombre',
-                      prefixIcon: Icon(Icons.person),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
+                    hintText: 'Nombre',
+                    icon: Icons.person,
                   ),
-                ),
-                SizedBox(height: 20),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 60),
-                  child: TextFormField(
+                  SizedBox(height: 20),
+                  _buildTextField(
                     controller: _passwordController,
-                    obscureText:
-                        _obscureText, // Utiliza el valor de _obscureText para mostrar u ocultar la contraseña
-                    decoration: InputDecoration(
-                      hintText: 'Cédula/Contraseña',
-                      prefixIcon: Icon(Icons.lock),
-                      suffixIcon: IconButton(
-                        icon: Icon(_obscureText
-                            ? Icons.visibility
-                            : Icons.visibility_off),
-                        onPressed: () {
-                          setState(() {
-                            _obscureText =
-                                !_obscureText; // Cambia el estado para mostrar u ocultar la contraseña
-                          });
-                        },
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
+                    hintText: 'Cédula/Contraseña',
+                    icon: Icons.lock,
+                    obscureText: _obscureText,
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscureText
+                          ? Icons.visibility
+                          : Icons.visibility_off),
+                      onPressed: () {
+                        setState(() {
+                          _obscureText = !_obscureText;
+                        });
+                      },
                     ),
                   ),
-                ),
-                SizedBox(height: 50),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 100),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _login(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: Container(
-                      width: double.infinity,
-                      child: Center(
-                        child: Text(
-                          'Iniciar Sesión',
-                          style: TextStyle(
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        '¿No tienes una cuenta?',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      TextButton(
-                        onPressed: _launchUrl,
-                        child: Text(
-                          'Regístrate',
-                          style: TextStyle(fontSize: 14, color: Colors.blue),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                  SizedBox(height: 50),
+                  _buildLoginButton(),
+                  SizedBox(height: 20),
+                  _buildSignUpOption(),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    bool obscureText = false,
+    Widget? suffixIcon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: GoogleFonts.lato(color: Colors.grey),
+        prefixIcon: Icon(icon, color: Colors.teal),
+        suffixIcon: suffixIcon,
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.teal, width: 2),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.teal, width: 2),
+          borderRadius: BorderRadius.circular(30),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 80),
+      child: ElevatedButton(
+        onPressed: () {
+          _login(context);
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.teal,
+          padding: EdgeInsets.symmetric(vertical: 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+        child: Container(
+          width: double.infinity,
+          child: Center(
+            child: Text(
+              'Iniciar Sesión',
+              style: GoogleFonts.lato(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ).animate().fadeIn(duration: 800.ms).slideY(begin: 1.0, end: 0.0),
+    );
+  }
+
+  Widget _buildSignUpOption() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Text(
+          '¿No tienes una cuenta?',
+          style: GoogleFonts.lato(fontSize: 14, color: Colors.grey),
+        ),
+        TextButton(
+          onPressed: _launchUrl,
+          child: Text(
+            'Regístrate',
+            style: GoogleFonts.lato(fontSize: 14, color: Colors.teal),
+          ),
+        ),
+      ],
+    ).animate().fadeIn(duration: 800.ms).slideY(begin: 1.0, end: 0.0);
   }
 
   final Uri _url = Uri.parse('https://formulario-cotopaxi.onrender.com');
@@ -185,7 +210,6 @@ class _LoginPageState extends State<LoginPage> {
         headers: _headers,
         body: body2,
       );
-      print(response.body);
       if (response.statusCode == 200) {
         Map<String, dynamic> content = json.decode(response.body);
         SharedPreferences prefs = await SharedPreferences.getInstance();
