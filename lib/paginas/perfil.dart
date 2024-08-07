@@ -19,6 +19,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'login.dart'; // Importa la página de inicio de sesión
 import 'dart:ui' as ui;
+import 'package:share_plus/share_plus.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -64,21 +65,26 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // Función para exportar los datos en PDF
   void _exportToPDF() async {
+    double _progress = 0.0;
+    String _filePath = '';
     // Mostrar el diálogo de progreso
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 20),
-              Text("Generando Tarjeta de Identidad..."),
-            ],
-          ),
-        );
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(value: _progress),
+                SizedBox(height: 20),
+                Text(
+                    "Generando Tarjeta de Identidad: ${(_progress * 100).toStringAsFixed(0)}%"),
+              ],
+            ),
+          );
+        });
       },
     );
 
@@ -115,22 +121,36 @@ class _ProfilePageState extends State<ProfilePage> {
         pen: PdfPen(PdfColor(75, 0, 130), width: 2),
       );
 
+      // Actualizar progreso
+      if (mounted) {
+        Navigator.of(context).pop();
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return StatefulBuilder(builder: (context, setState) {
+              _progress = 0.2;
+              return AlertDialog(
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(value: _progress),
+                    SizedBox(height: 20),
+                    Text(
+                        "Generando Tarjeta de Identidad: ${(_progress * 100).toStringAsFixed(0)}%"),
+                  ],
+                ),
+              );
+            });
+          },
+        );
+      }
+
       // Título
       graphics.drawString('Tarjeta de Identidad', titleFont,
           brush: PdfSolidBrush(PdfColor(75, 0, 130)),
           bounds: Rect.fromLTWH(xOffset, yOffset + 10, cardWidth, 30),
           format: PdfStringFormat(alignment: PdfTextAlignment.center));
-
-      // // Imagen de perfil
-      // if (_imagenPath.isNotEmpty) {
-      //   try {
-      //     final Uint8List imageBytes = await _getImageBytes(_imagenPath);
-      //     final PdfBitmap profileImage = PdfBitmap(imageBytes);
-      //     graphics.drawImage(profileImage, Rect.fromLTWH(50, 80, 100, 100));
-      //   } catch (e) {
-      //     print('Error al cargar la imagen de perfil: $e');
-      //   }
-      // }
 
       // Información del usuario
       final PdfFont infoFont = PdfStandardFont(PdfFontFamily.helvetica, 12);
@@ -146,6 +166,30 @@ class _ProfilePageState extends State<ProfilePage> {
       addUserInfo('Albergue', _albergue);
       addUserInfo('Cédula', _cedula);
 
+      // Actualizar progreso
+      if (mounted) {
+        Navigator.of(context).pop();
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return StatefulBuilder(builder: (context, setState) {
+              _progress = 0.6;
+              return AlertDialog(
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(value: _progress),
+                    SizedBox(height: 20),
+                    Text(
+                        "Generando Tarjeta de Identidad: ${(_progress * 100).toStringAsFixed(0)}%"),
+                  ],
+                ),
+              );
+            });
+          },
+        );
+      }
       // Código QR
       if (_qrImagePath.isNotEmpty) {
         try {
@@ -178,20 +222,53 @@ class _ProfilePageState extends State<ProfilePage> {
       final File file = File(filePath);
       await file.writeAsBytes(bytes);
 
+      // Actualizar progreso a 100%
       if (mounted) {
         Navigator.of(context).pop();
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return StatefulBuilder(builder: (context, setState) {
+              _progress = 1.0;
+              return AlertDialog(
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(value: _progress),
+                    SizedBox(height: 20),
+                    Text("Generando Tarjeta de Identidad: 100%"),
+                  ],
+                ),
+              );
+            });
+          },
+        );
+      }
 
+      // Esperar un momento antes de mostrar el diálogo final
+      await Future.delayed(Duration(seconds: 1));
+
+      if (mounted) {
+        Navigator.of(context).pop();
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text('PDF Generado'),
-              content: Text('El PDF se ha guardado en:\n$filePath'),
+              content: Text('El PDF se ha guardado en:\n$_filePath'),
               actions: <Widget>[
                 TextButton(
                   child: Text('OK'),
                   onPressed: () {
                     Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: Text('Compartir ubicación'),
+                  onPressed: () {
+                    Share.share(
+                        'El PDF de la tarjeta de identidad se encuentra en: $_filePath');
                   },
                 ),
               ],
