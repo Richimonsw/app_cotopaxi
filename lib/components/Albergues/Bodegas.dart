@@ -310,7 +310,7 @@ class _BodegasState extends State<Bodegas> {
             : filteredBodegas.isEmpty
                 ? Center(child: Text('No se encontraron Bodegas'))
                 : SizedBox(
-                    height: 280,
+                    height: 320,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: filteredBodegas.length,

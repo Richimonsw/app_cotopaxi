@@ -303,7 +303,7 @@ class _UsuariosState extends State<Usuarios> {
             : filteredUsuarios.isEmpty
                 ? Center(child: Text('No se encontraron usuarios'))
                 : SizedBox(
-                    height: 250,
+                    height: 290,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: filteredUsuarios.length,

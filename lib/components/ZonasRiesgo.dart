@@ -297,7 +297,7 @@ class _ZonasRiesgoState extends State<ZonasRiesgo> {
             : filteredZonasRiesgo.isEmpty
                 ? Center(child: Text('No se encontraron Sitios Seguros'))
                 : SizedBox(
-                    height: 220,
+                    height: 250,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: filteredZonasRiesgo.length,

@@ -309,7 +309,7 @@ class _AlberguesState extends State<Albergues> {
             : filteredAlbergues.isEmpty
                 ? Center(child: Text('No se encontraron albergues'))
                 : SizedBox(
-                    height: 250,
+                    height: 300,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: filteredAlbergues.length,

@@ -298,7 +298,7 @@ class _SitiosSegurosState extends State<SitiosSeguros> {
             : filteredSitiosSeguros.isEmpty
                 ? Center(child: Text('No se encontraron Sitios Seguros'))
                 : SizedBox(
-                    height: 220,
+                    height: 250,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: filteredSitiosSeguros.length,
