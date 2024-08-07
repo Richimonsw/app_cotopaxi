@@ -163,7 +163,7 @@ class _LoginPageState extends State<LoginPage> {
     ).animate().fadeIn(duration: 800.ms).slideY(begin: 1.0, end: 0.0);
   }
 
-  final Uri _url = Uri.parse('https://formulario-cotopaxi.onrender.com');
+  final Uri _url = Uri.parse('https://cotopaxi-477f5.web.app/formulario');
   Future<void> _launchUrl() async {
     if (!await launchUrl(_url)) {
       throw Exception('Could not launch $_url');
@@ -210,6 +210,7 @@ class _LoginPageState extends State<LoginPage> {
         headers: _headers,
         body: body2,
       );
+      print(response.body);
       if (response.statusCode == 200) {
         Map<String, dynamic> content = json.decode(response.body);
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -240,6 +241,8 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         final responseAdmin = await http.post(Uri.parse(apiUrlAdmin),
             headers: _headersAdmin, body: body2Admin);
+            
+      print(responseAdmin.body);
         if (responseAdmin.statusCode == 200) {
           Map<String, dynamic> contentAdmin = json.decode(responseAdmin.body);
           SharedPreferences prefs = await SharedPreferences.getInstance();
