@@ -608,45 +608,54 @@ class _ProfilePageState extends State<ProfilePage> {
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '$_nombre $_apellido',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        _cedula,
-                                        style: TextStyle(
-                                            fontSize: 14, color: Colors.white),
-                                      ),
-                                      if (_userRole == "admin_zonal" ||
-                                          _userRole == "admin_farmaceutico" ||
-                                          _userRole == "admin_general")
+                                Container(
+                                  width:
+                                      150, // Ajusta este valor al ancho deseado para la información del usuario
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
                                         Text(
-                                          _userRole,
+                                          '$_nombre $_apellido',
                                           style: TextStyle(
-                                            color: const Color.fromARGB(
-                                                255, 250, 239, 239),
-                                            fontSize: 14,
-                                          ),
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold),
+                                          overflow: TextOverflow.visible,
                                         ),
-                                      if (_userRole != "admin_zonal" &&
-                                          _userRole != "admin_farmaceutico" &&
-                                          _userRole != "admin_general")
                                         Text(
-                                          'Ciudadano',
+                                          _cedula,
                                           style: TextStyle(
-                                            color: const Color.fromARGB(
-                                                255, 250, 239, 239),
-                                            fontSize: 14,
-                                          ),
+                                              fontSize: 13,
+                                              color: Colors.white),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                    ]),
+                                        if (_userRole == "admin_zonal" ||
+                                            _userRole == "admin_farmaceutico" ||
+                                            _userRole == "admin_general")
+                                          Text(
+                                            _userRole,
+                                            style: TextStyle(
+                                              color: const Color.fromARGB(
+                                                  255, 250, 239, 239),
+                                              fontSize: 13,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        if (_userRole != "admin_zonal" &&
+                                            _userRole != "admin_farmaceutico" &&
+                                            _userRole != "admin_general")
+                                          Text(
+                                            'Ciudadano',
+                                            style: TextStyle(
+                                              color: const Color.fromARGB(
+                                                  255, 250, 239, 239),
+                                              fontSize: 13,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                      ]),
+                                ),
                                 VerticalDivider(
                                   color: Colors.white,
                                   thickness: 1,
@@ -656,32 +665,39 @@ class _ProfilePageState extends State<ProfilePage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     if (_userRole != "admin_general")
-                                      Column(
-                                        children: [
-                                          Text(
-                                            'ALBERGUE',
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          Text(
-                                            _albergue,
-                                            style: TextStyle(
-                                              color: const Color.fromARGB(
-                                                  255, 250, 239, 239),
-                                              fontSize: 14,
+                                      Container(
+                                        width:
+                                            100, // Ajusta este valor al ancho deseado para la información del albergue
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'ALBERGUE',
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold),
                                             ),
-                                          ),
-                                        ],
+                                            Text(
+                                              _albergue,
+                                              style: TextStyle(
+                                                color: const Color.fromARGB(
+                                                    255, 250, 239, 239),
+                                                fontSize: 13,
+                                              ),
+                                              overflow: TextOverflow.visible,
+                                              maxLines:
+                                                  2, // Ajusta este valor si quieres más o menos líneas
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     if (_userRole == "admin_general")
                                       Image.asset(
-                                        'assets/icon/admin.png', // Asegúrate de que la extensión sea correcta
-                                        width:
-                                            50, // Ajusta el tamaño según sea necesario
-                                        height:
-                                            50, // Ajusta el tamaño según sea necesario
+                                        'assets/icon/admin.png',
+                                        width: 50,
+                                        height: 50,
                                       ),
                                   ],
                                 )
