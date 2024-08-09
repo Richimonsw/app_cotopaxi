@@ -1,4 +1,9 @@
+
+import 'dart:typed_data';
+import 'dart:ui';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -22,10 +27,14 @@ class _MapWidgetState extends State<MapScreen> {
   Set<Polyline> polylines = {};
   bool showEvacuationMessage = false;
 
+  late BitmapDescriptor albergueIcon;
+  late BitmapDescriptor sitioSeguroIcon;
+
   @override
   void initState() {
     super.initState();
     _loadData();
+    _loadCustomIcons();
   }
 
   Future<void> _loadData() async {
@@ -97,57 +106,62 @@ class _MapWidgetState extends State<MapScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        GoogleMap(
-          onMapCreated: _onMapCreated,
-          initialCameraPosition: CameraPosition(
-            target: LatLng(-0.9339738, -78.6248696),
-            zoom: 7.0,
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Mapa de Evacuación'),
+    ),
+    body: Center(
+      child: Column(
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+                GoogleMap(
+                  onMapCreated: _onMapCreated,
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(-0.9339738, -78.6248696),
+                    zoom: 7.0,
+                  ),
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false,
+                  zoomControlsEnabled: false,
+                  compassEnabled: true,
+                  mapType: MapType.normal,
+                  markers: markers,
+                  polylines: polylines,
+                ),
+                Positioned(
+                  bottom: 20,
+                  left: 20,
+                  child: _buildMapControlButton(
+                    icon: Icons.refresh,
+                    iconColor: Colors.white,
+                    backgroundColor: Colors.blue,
+                    onPressed: _reloadMap,
+                    label: "Recargar",
+                  ),
+                ),
+                Positioned(
+                  bottom: 20,
+                  right: 20,
+                  child: _buildMapControlButton(
+                    icon: Icons.arrow_forward,
+                    iconColor: Colors.white,
+                    backgroundColor: Colors.green,
+                    onPressed: _getUserLocation,
+                    label: "Trazar ruta",
+                  ),
+                ),
+              ],
+            ),
           ),
-          myLocationEnabled: true,
-          myLocationButtonEnabled: false,
-          zoomControlsEnabled: false,
-          compassEnabled: true,
-          mapType: MapType.normal,
-          markers: markers,
-          polylines: polylines,
-        ),
-        Positioned(
-          bottom: 20,
-          left: 110,
-          child: Column(
-            children: [
-              _buildMapControlButton(
-                icon: Icons.refresh,
-                iconColor: Colors.white,
-                backgroundColor: Colors.blue,
-                onPressed: _reloadMap,
-                label: "Recargar",
-              ),
-            ],
-          ),
-        ),
-        Positioned(
-          bottom: 20,
-          right: 110,
-          child: Column(
-            children: [
-              _buildMapControlButton(
-                icon: Icons.arrow_forward,
-                iconColor: Colors.white,
-                backgroundColor: Colors.green,
-                onPressed: _getUserLocation,
-                label: "Trazar ruta",
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
+          // Puedes agregar más widgets debajo del mapa si lo deseas
+        ],
+      ),
+    ),
+  );
+}
   Widget _buildMapControlButton({
     required IconData icon,
     required Color iconColor,
@@ -355,6 +369,26 @@ class _MapWidgetState extends State<MapScreen> {
     );
   }
 
+  Future<void> _loadCustomIcons() async {
+  final int targetWidth = 125; // Ajusta este valor según necesites
+  final int targetHeight = 125; // Ajusta este valor según necesites
+
+  final Uint8List albergueIconData = await getBytesFromAsset('assets/icon/albergue.png', targetWidth, targetHeight);
+  albergueIcon = BitmapDescriptor.fromBytes(albergueIconData);
+
+  final Uint8List sitioSeguroIconData = await getBytesFromAsset('assets/icon/sitioSeguros.png', targetWidth, targetHeight);
+  sitioSeguroIcon = BitmapDescriptor.fromBytes(sitioSeguroIconData);
+
+  _addMarkers();
+}
+
+Future<Uint8List> getBytesFromAsset(String path, int width, int height) async {
+  ByteData data = await rootBundle.load(path);
+  ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width, targetHeight: height);
+  ui.FrameInfo fi = await codec.getNextFrame();
+  return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
+}
+
   void _addMarkers() {
     Set<Marker> newMarkers = {};
 
@@ -370,7 +404,7 @@ class _MapWidgetState extends State<MapScreen> {
           title: 'Albergue',
           snippet: nombre,
         ),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        icon: albergueIcon,
       );
     }));
 
@@ -386,7 +420,7 @@ class _MapWidgetState extends State<MapScreen> {
           title: 'Sitio Seguro',
           snippet: nombre,
         ),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        icon: sitioSeguroIcon,
       );
     }));
 
