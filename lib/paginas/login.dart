@@ -221,10 +221,10 @@ class _LoginPageState extends State<LoginPage> {
           prefs.setString("albergue",
               content["ciudadano"]["albergue"]?["nombre"] ?? "Sin asignar");
           prefs.setString("cedula", content["ciudadano"]["cedula"] ?? "");
-          // prefs.setString(
-          //     "profileImageUrl",
-          //     content["persona"]
-          //         ["imgPerfil"]); // Guardar URL de la imagen de perfil
+          prefs.setString(
+              "imgPerfil",
+              content["ciudadano"]
+                  ["imgPerfil"]); // Guardar URL de la imagen de perfil
         });
 
         // Guardar la imagen del qrURL en la caché
@@ -241,8 +241,8 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         final responseAdmin = await http.post(Uri.parse(apiUrlAdmin),
             headers: _headersAdmin, body: body2Admin);
-            
-      print(responseAdmin.body);
+
+        print(responseAdmin.body);
         if (responseAdmin.statusCode == 200) {
           Map<String, dynamic> contentAdmin = json.decode(responseAdmin.body);
           SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -256,6 +256,10 @@ class _LoginPageState extends State<LoginPage> {
             prefs.setString("cedula", contentAdmin["usuario"]["cedula"]);
             prefs.setString("rol", contentAdmin["usuario"]["rol"]);
             prefs.setString("token", contentAdmin["token"]);
+            prefs.setString(
+                "imgPerfil",
+                contentAdmin["usuario"]
+                    ["imgPerfil"]); // Guardar URL de la imagen de perfil
           });
 
           Navigator.push(

@@ -13,6 +13,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
+import 'package:flutter/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,6 +21,7 @@ import 'package:http/http.dart' as http;
 import 'login.dart'; // Importa la página de inicio de sesión
 import 'dart:ui' as ui;
 import 'package:share_plus/share_plus.dart';
+import 'package:open_file/open_file.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -55,8 +57,7 @@ class _ProfilePageState extends State<ProfilePage> {
       _nombre = prefs.getString('nombres') ?? '';
       _apellido = prefs.getString('apellidos') ?? '';
       _albergue = prefs.getString('albergue') ?? '';
-      _imagenPath = prefs.getString('profileImageUrl') ??
-          _defaultProfileImageUrl; // Obtener la URL de la imagen
+      _imagenPath = prefs.getString('imgPerfil') ?? _defaultProfileImageUrl;
       _qrImagePath = prefs.getString('qrImagePath') ?? '';
       _cedula = prefs.getString('cedula') ?? '';
       _userRole = prefs.getString('rol') ?? '';
@@ -64,10 +65,11 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   // Función para exportar los datos en PDF
+
   void _exportToPDF() async {
     double _progress = 0.0;
     String _filePath = '';
-    // Mostrar el diálogo de progreso
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -80,7 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 CircularProgressIndicator(value: _progress),
                 SizedBox(height: 20),
                 Text(
-                    "Generando Tarjeta de Identidad: ${(_progress * 100).toStringAsFixed(0)}%"),
+                    "Generando Tarjeta de Identidad: ${(_progress * 33).toStringAsFixed(0)}%"),
               ],
             ),
           );
@@ -98,13 +100,12 @@ class _ProfilePageState extends State<ProfilePage> {
           );
         }
         return;
-      }
+      } 
 
       final PdfDocument document = PdfDocument();
       final PdfPage page = document.pages.add();
       final PdfGraphics graphics = page.graphics;
 
-      // Definir tamaño de tarjeta más pequeño
       double cardWidth = 400;
       double cardHeight = 250;
       double xOffset = (page.getClientSize().width - cardWidth) / 2;
@@ -121,7 +122,6 @@ class _ProfilePageState extends State<ProfilePage> {
         pen: PdfPen(PdfColor(75, 0, 130), width: 2),
       );
 
-      // Actualizar progreso
       if (mounted) {
         Navigator.of(context).pop();
         showDialog(
@@ -137,7 +137,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     CircularProgressIndicator(value: _progress),
                     SizedBox(height: 20),
                     Text(
-                        "Generando Tarjeta de Identidad: ${(_progress * 100).toStringAsFixed(0)}%"),
+                        "Generando Tarjeta de Identidad: ${(_progress * 69).toStringAsFixed(0)}%"),
                   ],
                 ),
               );
@@ -146,13 +146,11 @@ class _ProfilePageState extends State<ProfilePage> {
         );
       }
 
-      // Título
       graphics.drawString('Tarjeta de Identidad', titleFont,
           brush: PdfSolidBrush(PdfColor(75, 0, 130)),
           bounds: Rect.fromLTWH(xOffset, yOffset + 10, cardWidth, 30),
           format: PdfStringFormat(alignment: PdfTextAlignment.center));
 
-      // Información del usuario
       final PdfFont infoFont = PdfStandardFont(PdfFontFamily.helvetica, 12);
       double textY = yOffset + 50;
       void addUserInfo(String label, String value) {
@@ -166,7 +164,6 @@ class _ProfilePageState extends State<ProfilePage> {
       addUserInfo('Albergue', _albergue);
       addUserInfo('Cédula', _cedula);
 
-      // Actualizar progreso
       if (mounted) {
         Navigator.of(context).pop();
         showDialog(
@@ -190,7 +187,7 @@ class _ProfilePageState extends State<ProfilePage> {
           },
         );
       }
-      // Código QR
+
       if (_qrImagePath.isNotEmpty) {
         try {
           final Uint8List qrBytes = await _getImageBytes(_qrImagePath);
@@ -217,37 +214,24 @@ class _ProfilePageState extends State<ProfilePage> {
       }
 
       final String fileName =
-          'perfil_usuario_${DateTime.now().millisecondsSinceEpoch}.pdf';
-      final String filePath = '${directory.path}/$fileName';
-      final File file = File(filePath);
+          'perfil_usuario_${_nombre}_${_apellido}_$_cedula.pdf';
+      _filePath = '${directory.path}/$fileName';
+      final File file = File(_filePath);
       await file.writeAsBytes(bytes);
 
-      // Actualizar progreso a 100%
-      if (mounted) {
-        Navigator.of(context).pop();
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return StatefulBuilder(builder: (context, setState) {
-              _progress = 1.0;
-              return AlertDialog(
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(value: _progress),
-                    SizedBox(height: 20),
-                    Text("Generando Tarjeta de Identidad: 100%"),
-                  ],
-                ),
-              );
-            });
-          },
-        );
+      if (Platform.isAndroid) {
+        // Actualiza la base de datos de MediaStore para que el archivo sea reconocido
+        final path = _filePath;
+        final uri = Uri.parse(path);
+        final result = await Process.run('am', [
+          'broadcast',
+          '-a',
+          'android.intent.action.MEDIA_SCANNER_SCAN_FILE',
+          '-d',
+          uri.toString()
+        ]);
+        print('Resultado de MediaStore: ${result.stdout}');
       }
-
-      // Esperar un momento antes de mostrar el diálogo final
-      await Future.delayed(Duration(seconds: 1));
 
       if (mounted) {
         Navigator.of(context).pop();
@@ -265,10 +249,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   },
                 ),
                 TextButton(
-                  child: Text('Compartir ubicación'),
-                  onPressed: () {
-                    Share.share(
-                        'El PDF de la tarjeta de identidad se encuentra en: $_filePath');
+                  child: Text('Abrir PDF'),
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    print('Intentando abrir el archivo: $_filePath');
+                    final result = await OpenFile.open(_filePath);
+                    print('Resultado de OpenFile: $result');
                   },
                 ),
               ],
